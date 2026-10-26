@@ -2,6 +2,9 @@
 
 Habla siempre en español, con palabras sencillas: el dueño no es programador.
 
+Este repositorio es para los proyectos de **dropshipping** (trabajo actual y futuro).
+Los archivos de la empresa (Dropbox de Inmobisur, proyectos pasados) NO van aquí.
+
 ## Sincronización Mac ↔ teléfono (muy importante)
 
 El dueño trabaja a veces en su Mac y a veces desde el teléfono (sesiones en la nube).

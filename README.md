@@ -1,6 +1,6 @@
 # Francisco
 
-Mi espacio de trabajo con Claude. Todo lo que hago en el Mac o en el teléfono se guarda aquí, en GitHub.
+Mi espacio de trabajo con Claude para proyectos de dropshipping. Todo lo que hago en el Mac o en el teléfono se guarda aquí, en GitHub.
 
 ## Cómo funciona
 

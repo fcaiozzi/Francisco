@@ -48,7 +48,7 @@ Todavía no se elige ninguno. Es el siguiente paso grande.
 
 ## 🔧 Pendientes menores
 - Datos bancarios en Dropi (los llena Francisco).
-- Facturación electrónica en Dropi.
+- Facturación electrónica en Dropi: **enviada, en revisión por Dropi** (26-oct-2026). Dropi avisará cuando esté lista; recién ahí se puede seguir con la app.
 - Confirmar con Dropi el plazo de envío de 2 a 7 días hábiles puesto en la política.
 - Activar la renovación automática del dominio (vence el 26-ago-2027).
 - Verificación en dos pasos en Shopify y Facebook.

@@ -53,3 +53,9 @@ Todavía no se elige ninguno. Es el siguiente paso grande.
 - Activar la renovación automática del dominio (vence el 26-ago-2027).
 - Verificación en dos pasos en Shopify y Facebook.
 - Opcional: cambiar la tienda a fondo claro (el negro no convenció).
+
+## 🗓️ Lunes 26 y martes 27-oct-2026
+- Se hizo el **mapa del negocio** (`mapa-del-negocio.html`): cómo se conectan Facebook, Instagram, TikTok, Shopify y Dropi, el camino del dinero y por dónde partir.
+- Copia del mapa y del resumen en Google Drive, carpeta «Dropshiping - CompraFácil».
+- **Remote Control activado en el Mac**: la carpeta del proyecto es `~/Documents/Dropshipping` (conectada a GitHub, rama `main`). Se arranca con `cd ~/Documents/Dropshipping` y `claude remote-control` en la Terminal, modo «same-dir». Desde ahora conviene trabajar desde el celular en la sesión conectada al Mac.
+- Siguiente paso: elegir el producto (Biblioteca de Anuncios de Facebook + catálogo de Dropi).

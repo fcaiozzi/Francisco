@@ -1,11 +1,12 @@
-# Cerco de madera — patio 1er piso
+# Cerco de madera — patio 1er piso (versión con 20 tablas compradas)
 
 Bosquejo: `bosquejo-cerco.png` (o `.svg`).
 
 - Largo 7,50 m: tramo A 5,50 m + quiebre 90° + tramo B 2,00 m. Altura 80 cm.
-- Pino seco cepillado 1x2" (real ≈ 1,9 x 4,1 cm), tablas de 3,20 m.
-- Verticales: 47 (tramo A) + 17 (tramo B) = 64 piezas de 80 cm → 16 tablas.
-- Travesaños: 3 líneas x 7,50 m = 22,5 m → 9 tablas.
-- Total 1x2": 25 tablas (comprar 27 con reserva).
-- Recomendado: 7 postes 2x2" de 80 cm (2 tablas) para que el cerco quede firme.
-- Tornillos: 1¼" (no 3/4", que no alcanza a agarrar el travesaño). 192 + postes → caja de 250.
+- 20 tablas de pino cepillado 1x2" x 3,20 m (real ≈ 1,9 x 4,1 cm).
+- Travesaños: 9 tablas (por línea: 3,20 + 2,30 en tramo A y 2,00 en tramo B).
+- Verticales de 80 cm (cortar a 79,5): 11 tablas x 4 = 44 + 6 de los sobrantes de travesaños (0,90 y 1,20 m) = 50.
+- Reparto: 37 en tramo A y 13 en tramo B.
+- Separación entre verticales: ≈ 11,1 cm (tramo A 11,1 cm; tramo B 11,3 cm) ≈ 4 3/8".
+- Tornillos 1¼": 50 x 3 = 150 → caja de 200.
+- Postes 2x2" opcionales (no incluidos en las 20 tablas).

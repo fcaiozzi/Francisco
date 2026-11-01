@@ -45,7 +45,7 @@ def elevacion(x0,y0,largo,n,desde_esquina,postes,titulo):
 out_w,out_h=1400,1180
 # ---------- PLANTA ----------
 t(40,40,"CERCO DE MADERA — PATIO 1er PISO (bosquejo, medidas en cm)",22,weight="bold")
-t(40,64,"Pino seco cepillado 1x2\" (medida real ≈ 1,9 x 4,1 cm) · altura 80 cm · separación entre piezas 3\" (7,6 cm)",14,fill="#555")
+t(40,64,"Pino seco cepillado 1x2\" (medida real ≈ 1,9 x 4,1 cm) · altura 80 cm · 20 tablas de 3,20 m · separación entre verticales ≈ 11 cm (4 3/8\")",14,fill="#555")
 px0,py0,ps=80,160,0.9
 t(40,100,"1) VISTA EN PLANTA (desde arriba)",17,weight="bold")
 l(px0,py0,px0+550*ps,py0,stroke="#7a5426",sw=6)
@@ -58,36 +58,36 @@ cota_v(px0+550*ps+30,py0,py0+200*ps,"Tramo B = 2,00 m")
 t(px0+550*ps-14,py0+20,"quiebre 90°",12,"end",fill="#a33")
 t(px0+150,py0+45,"Tu patio (mascota)",14,fill="#2a6")
 t(px0+400,py0+150,"Patio vecino",14,"end",fill="#888")
-t(px0+700,py0+40,"■ = poste recomendado 2x2\" (7 en total)",13,fill="#555")
+t(px0+700,py0+40,"■ = poste 2x2\" opcional (no incluido en las 20 tablas)",13,fill="#555")
 t(px0+700,py0+60,"Largo total: 5,50 + 2,00 = 7,50 m",13,fill="#555")
 
 # ---------- ELEVACIONES ----------
-gA=elevacion(80,420,550,47,False,postesA,"2) ELEVACIÓN TRAMO A (5,50 m)")
+gA=elevacion(80,420,550,37,False,postesA,"2) ELEVACIÓN TRAMO A (5,50 m)")
 cota_v(60,420,420+H*S,"80",-1)
-gB=elevacion(80,760,200,17,True,[100,200],"3) ELEVACIÓN TRAMO B (2,00 m, parte en el quiebre)")
+gB=elevacion(80,760,200,13,True,[100,200],"3) ELEVACIÓN TRAMO B (2,00 m, parte en el quiebre)")
 cota_v(60,760,760+H*S,"80",-1)
 
 # ---------- DETALLE ----------
 dx,dy,ds=620,760,3.0
 t(dx,dy-38,"4) DETALLE: posición de travesaños",17,weight="bold")
 for i in range(3):
-    r(dx+i*(W_P+7.62)*ds,dy-0,W_P*ds,H*ds*0.0+0,fill="none",stroke="none")
+    r(dx+i*(W_P+11.1)*ds,dy-0,W_P*ds,H*ds*0.0+0,fill="none",stroke="none")
 # dibujo a escala reducida de alto (ds en vertical 3px/cm -> 240px)
 for i in range(3):
-    xx=dx+20+i*(W_P+7.62)*ds
+    xx=dx+20+i*(W_P+11.1)*ds
     for a,b in rails:
         pass
 for a,b in rails:
     r(dx,dy+a*ds*0.95,140,(b-a)*ds*0.95,fill="#c99a5b")
 for i in range(3):
-    r(dx+15+i*(W_P+7.62)*ds,dy,W_P*ds,H*ds*0.95)
+    r(dx+15+i*(W_P+11.1)*ds,dy,W_P*ds,H*ds*0.95)
 k=ds*0.95
 cota_v(dx+160,dy,dy+10*k,"10 cm")
 cota_v(dx+160,dy+(40-W_P/2)*k,dy+(40+W_P/2)*k,"centro a 40 cm")
 cota_v(dx+160,dy+(H-10)*k,dy+H*k,"10 cm")
 cota_v(dx-15,dy,dy+H*k,"80",-1)
 xg=dx+15+W_P*ds
-cota_h(xg,xg+7.62*ds,dy+H*k+22,"3\"")
+cota_h(xg,xg+11.1*ds,dy+H*k+22,"11 cm")
 
 # corte lateral
 cx=dx+300
@@ -105,17 +105,17 @@ t(cx+70,dy+132,"(3/4\" = 1,9 cm no agarra)",12,fill="#a33")
 mx,my=80,1000
 t(mx,my,"5) LISTA DE MATERIALES",17,weight="bold")
 filas=[
- ("Verticales 1x2\" de 80 cm","47 + 17 = 64 piezas","64 ÷ 4 = 16 tablas de 3,20 m"),
- ("Travesaños 1x2\" (3 líneas)","3 × 7,50 m = 22,5 m","9 tablas de 3,20 m"),
- ("TOTAL 1x2\" cepillado","","25 tablas (+2 de reserva = 27)"),
- ("Postes 2x2\" de 80 cm (recomendado)","7 postes","2 tablas de 3,20 m"),
- ("Tornillos 1¼\" (verticales)","64 × 3 = 192","+ postes ≈ 1 caja de 250"),
+ ("Travesaños 1x2\" (3 líneas x 7,50 m)","por línea: 3,20 + 2,30 (tramo A) y 2,00 (tramo B)","9 tablas"),
+ ("Verticales de 80 cm (tablas enteras)","11 tablas x 4","44 piezas"),
+ ("Verticales de 80 cm (sobrantes travesaños)","sobran 0,90 m y 1,20 m por línea → 2 x 3","6 piezas"),
+ ("TOTAL","37 (tramo A) + 13 (tramo B) = 50 verticales","20 tablas"),
+ ("Tornillos 1¼\"","50 x 3 = 150","1 caja de 200"),
 ]
 y=my+28
 for a,b,c in filas:
-    t(mx,y,a,14,weight="bold" if "TOTAL" in a else "normal"); t(mx+380,y,b,14); t(mx+640,y,c,14,weight="bold")
+    t(mx,y,a,14,weight="bold" if "TOTAL" in a else "normal"); t(mx+330,y,b,14); t(mx+760,y,c,14,weight="bold")
     y+=24
-t(mx,y+10,"Gris punteado = postes recomendados (no estaban en la idea original, pero sin ellos el cerco no queda firme).",12,fill="#777")
+t(mx,y+10,"Gris punteado = postes 2x2\" opcionales (habría que comprarlos aparte). Sin postes, fija los extremos al muro con escuadras.",12,fill="#777")
 
 svg=f'<svg xmlns="http://www.w3.org/2000/svg" width="{out_w}" height="{out_h}" viewBox="0 0 {out_w} {out_h}"><defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs><rect width="100%" height="100%" fill="#fff"/>'+"\n".join(out)+"</svg>"
 open(__import__('sys').argv[1],"w").write(svg)

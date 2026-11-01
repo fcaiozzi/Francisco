@@ -10,3 +10,9 @@ Bosquejo: `bosquejo-cerco.png` (o `.svg`).
 - Separación entre verticales: ≈ 11,1 cm (tramo A 11,1 cm; tramo B 11,3 cm) ≈ 4 3/8".
 - Tornillos 1¼": 50 x 3 = 150 → caja de 200.
 - Postes 2x2" opcionales (no incluidos en las 20 tablas).
+
+## Plantilla de ubicación de travesaños (pieza vertical de 79,5 cm, medido desde arriba)
+- Travesaño superior: de 10,0 a 14,1 cm (tornillo a 12 cm)
+- Travesaño central: de 37,7 a 41,8 cm (tornillo a 39,75 cm)
+- Travesaño inferior: de 65,4 a 69,5 cm (tornillo a 67,5 cm); quedan 10 cm al borde de abajo
+- Espacio libre entre travesaños: 23,6 cm

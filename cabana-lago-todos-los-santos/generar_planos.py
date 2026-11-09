@@ -38,7 +38,7 @@ ESP_T, ESP_B = "0,59", "0,58"
 # Planchas trapezoidales (ancho útil ~1,0 m): T = translúcida, O = opaca
 PLANCHAS = [(i, min(i + 1.0, L), t) for i, t in zip(range(9), "TTTTTOTOT")]
 def largo_plancha(x0, x1):
-    return math.ceil((max(borde_techo(x0), borde_techo(x1)) + 0.05) * 1.005 * 20) / 20
+    return math.ceil((max(borde_techo(x0), borde_techo(x1)) + 0.08) * 1.005 * 20) / 20
 tij = []
 for i, x in enumerate(xs_ter + xs_bod, 1):
     ye = borde_techo(x)
@@ -59,6 +59,30 @@ SEP = 0.40   # 2x3 -> pies derechos cada 40 cm
 MUROS = [((L, 0), (L, 2.0)), ((L, 2.0), (L - 0.35, D)),
          ((L - 0.35, D), (XB, D)), ((XB, D), (XB, 0))]
 
+# ---------------- Ventanas ----------------
+VEN_ALTO = (1.71, 2.03)        # vano bruto: antepecho -> dintel (ventana 30 cm, borde superior ~2,0 m)
+VENTANAS = [
+    dict(n="V1", muro="der", a=1.00 - 0.76, b=1.00 + 0.76, med="150 x 30", dintel="2x6", hd=0.138),
+    dict(n="V2", muro="frente", a=(XB + L - 0.35) / 2 - 1.01, b=(XB + L - 0.35) / 2 + 1.01,
+         med="200 x 30", dintel="2x8", hd=0.185),
+]
+def _pt(v, s):
+    return (L, round(s, 3)) if v["muro"] == "der" else (round(s, 3), D)
+def en_vano(p, marg=0.05):
+    for v in VENTANAS:
+        s = p[1] if v["muro"] == "der" else p[0]
+        if (v["muro"] == "der" and abs(p[0] - L) < 1e-6) or (v["muro"] == "frente" and abs(p[1] - D) < 1e-6):
+            if v["a"] - marg < s < v["b"] + marg:
+                return v
+    return None
+def muñecos_inf(v):
+    n = math.ceil((v["b"] - v["a"]) / SEP) - 1
+    return [v["a"] + (v["b"] - v["a"]) * (i + 1) / (n + 1) for i in range(n)]
+def tope_pd(muro, s):
+    """altura de la cara superior de los pies derechos (bajo solera doble)."""
+    y = s if muro == "der" else D
+    return zt(y) - H_T - 0.082
+
 def pies_derechos():
     pts = []
     for (x1, y1), (x2, y2) in MUROS:
@@ -69,20 +93,30 @@ def pies_derechos():
             p = (round(x1 + (x2 - x1) * t, 3), round(y1 + (y2 - y1) * t, 3))
             if x1 == x2 == XB and PUERTA[0] - 0.05 < p[1] < PUERTA[1] + 0.05:
                 continue  # dentro del vano
+            if en_vano(p):
+                continue  # dentro de vano de ventana
             if p not in pts:
                 pts.append(p)
+    # vanos de ventana: pie derecho entero + jamba a cada lado
+    for v in VENTANAS:
+        for s in (v["a"] - 0.0205, v["a"] - 0.0615, v["b"] + 0.0205, v["b"] + 0.0615):
+            pts.append(_pt(v, s))
     # vano puerta: 2 pies derechos enteros + 2 jambas (bajo dintel)
     pts += [(XB, PUERTA[0] - 0.045), (XB, PUERTA[0] - 0.09),
             (XB, PUERTA[1] + 0.045), (XB, PUERTA[1] + 0.09)]
     # refuerzo: doble pie derecho bajo cada tijeral que apoya en el muro exterior
     for x in xs_bod:
-        if x < L - 0.35:
+        if x < L - 0.35 and not en_vano((round(x, 3), D)):
             pts.append((round(x, 3), D))
     # refuerzo de esquinas
     pts += [(L, 2.0), (L - 0.35, D), (XB, D)]
     return pts
 PD = pies_derechos()
 N_PD = len(PD)
+N_MUN_INF = sum(len(muñecos_inf(v)) for v in VENTANAS)
+M_ANTEP = sum(2 * (v["b"] - v["a"] + 0.082) for v in VENTANAS)
+N_VEN_2X3 = math.ceil(N_MUN_INF + M_ANTEP / 3.2 + 1)      # muñecos + antepecho doble + calce V2
+print("ventanas: muñecos inf", N_MUN_INF, "antepecho m", round(M_ANTEP, 2), "piezas 2x3", N_VEN_2X3)
 PERIM = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in MUROS)
 N_PD_COMPRA = math.ceil(N_PD * 1.10)
 N_SOL = math.ceil(((PERIM - 0.88) + 2 * PERIM) / 3.2 * 1.10)
@@ -133,6 +167,8 @@ USOS_TORN = [
     ("Esquineros / tapajuntas exteriores", "H", 5, 10),
     ("Contrachapado ranurado interior", "I", 10, 30),
     ("Cortagotera en Z", "J", 3, 6),
+    ("Refuerzos de ventanas (jambas, antepecho, muñecos, dintel)", "A", 2, 45),
+    ("Botaguas sobre ventanas", "H", 2, 6),
     ("Ganchos de canaleta al tapacán c/50 cm", "H", 19, 2),
     ("Forro muro: a la plancha c/30 cm", "F", 28, 1),
     ("Forro muro: al muro existente c/40 cm", "H", 21, 1),
@@ -177,11 +213,24 @@ def planta(ax):
     ax.text(L - 0.1, cy[-1] + 0.2, "canaleta PVC café → bajada Ø80", fontsize=7.5, color="#7b4a1e", ha="right")
     for px, py in PILARES:
         ax.add_patch(Rectangle((px - 0.045, py - 0.045), 0.09, 0.09, fc="k", zorder=5))
-    segs = [[(L, 0), (L, 2.0)], [(L, 2.0), (L - 0.35, D)],
-            [(L - 0.35, D), (XB, D)], [(XB, D), (XB, PUERTA[1])], [(XB, PUERTA[0]), (XB, 0)]]
+    V1, V2 = VENTANAS
+    segs = [[(L, 0), (L, V1["a"])], [(L, V1["b"]), (L, 2.0)], [(L, 2.0), (L - 0.35, D)],
+            [(L - 0.35, D), (V2["b"], D)], [(V2["a"], D), (XB, D)],
+            [(XB, D), (XB, PUERTA[1])], [(XB, PUERTA[0]), (XB, 0)]]
     for (x1, y1), (x2, y2) in segs:
         ax.plot([x1, x2], [y1, y2], color="#1f4e79", lw=4, solid_capstyle="butt",
                 zorder=4)
+    for v in VENTANAS:
+        (x1, y1), (x2, y2) = _pt(v, v["a"]), _pt(v, v["b"])
+        for off in (-0.02, 0.02):
+            dx, dy = (off, 0) if v["muro"] == "der" else (0, off)
+            ax.plot([x1 + dx, x2 + dx], [y1 + dy, y2 + dy], color="#2c7fb8", lw=1.2, zorder=5)
+        if v["muro"] == "der":
+            ax.text(L + 0.12, (v["a"] + v["b"]) / 2, f'{v["n"]} {v["med"]}\nvano a 1,71–2,03 m', fontsize=7.5,
+                    color="#2c7fb8", va="center", weight="bold")
+        else:
+            ax.text((v["a"] + v["b"]) / 2, D - 0.12, f'{v["n"]} {v["med"]} · vano a 1,71–2,03 m', fontsize=7.5,
+                    color="#2c7fb8", ha="center", weight="bold")
     for x, y in PD:
         ax.plot(x, y, "s", ms=4, color="white", mec="k", zorder=6)
     ax.plot([XB, XB + 0.80], [PUERTA[0] + 0.04] * 2, color="k", lw=1.5, zorder=6)
@@ -294,6 +343,16 @@ def iso(ax, azim, elev=30):
         ax.plot([x1, x2], [y1, y2], [1.7, 1.7], color="#1f4e79", lw=1.2)
     for x, y in PD:
         ax.plot([x, x], [y, y], [0, zt(y) - 0.14], color="#2e75b6", lw=1.4)
+    for v in VENTANAS:
+        (x1, y1), (x2, y2) = _pt(v, v["a"]), _pt(v, v["b"])
+        z0, z1 = VEN_ALTO
+        ax.add_collection3d(Poly3DCollection([[(x1, y1, z0 + 0.01), (x2, y2, z0 + 0.01), (x2, y2, z1 - 0.01),
+                                               (x1, y1, z1 - 0.01)]], fc="#9ecae1", ec="#2c7fb8", alpha=0.8))
+        ax.plot([x1, x2], [y1, y2], [z1 + v["hd"] / 2] * 2, color="#1f4e79", lw=4)   # dintel
+        ax.plot([x1, x2], [y1, y2], [z0 - 0.04] * 2, color="#1f4e79", lw=3)          # antepecho
+        for s in muñecos_inf(v):
+            px, py = _pt(v, s)
+            ax.plot([px, px], [py, py], [0, z0 - 0.08], color="#2e75b6", lw=1.4)
     y0, y1 = PUERTA
     ax.plot([XB, XB], [y0, y1], [2.05, 2.05], color="#1f4e79", lw=4)
     puerta = [[(XB - 0.01, y0 + 0.04, 0), (XB - 0.01, y1 - 0.04, 0),
@@ -603,6 +662,156 @@ def llave_hojalateria(ax):
     ax.set_title("UBICACIÓN DE LA HOJALATERÍA (planta de techo)", fontsize=10, weight="bold")
 
 
+# ---------------- Lámina 6: ELEVACIONES DE TABIQUERÍA CON VENTANAS ----------------
+AZUL = "#9dbbd9"; AZUL_OSC = "#1f4e79"
+
+def elevacion(ax, v):
+    ax.set_aspect("equal"); ax.axis("off")
+    if v["muro"] == "der":
+        s0, s1 = 0.0, 2.0
+        tope = lambda s: tope_pd("der", s)
+        titulo_e = "ELEVACIÓN MURO LATERAL (2,5 m) · ventana V1 150 x 30 — vista desde afuera"
+        tijs = [(s0, s1)]
+    else:
+        s0, s1 = XB, L - 0.35
+        tope = lambda s: tope_pd("frente", s)
+        titulo_e = "ELEVACIÓN MURO FRENTE A LA CASA · ventana V2 200 x 30 — vista desde afuera"
+        tijs = None
+    z0, z1 = VEN_ALTO
+    a, b, hd = v["a"], v["b"], v["hd"]
+    pd = sorted({(p[1] if v["muro"] == "der" else p[0]) for p in PD
+                 if (v["muro"] == "der" and abs(p[0] - L) < 1e-6 and p[1] <= 2.0 + 1e-6)
+                 or (v["muro"] == "frente" and abs(p[1] - D) < 1e-6 and XB - 1e-6 <= p[0] <= L - 0.35 + 1e-6)})
+    def poly_top(sa, sb, dz=0.0):
+        return [(sa, tope(sa) + dz), (sb, tope(sb) + dz)]
+    # solera inferior y superior doble
+    ax.add_patch(Rectangle((s0, 0), s1 - s0, 0.041, fc=AZUL, ec=AZUL_OSC))
+    for k in (0, 1):
+        (xa, za), (xb, zb) = poly_top(s0, s1, 0.041 * k)
+        ax.add_patch(Polygon([(xa, za), (xb, zb), (xb, zb + 0.041), (xa, za + 0.041)], fc=AZUL, ec=AZUL_OSC))
+    # pies derechos (fuera del vano), jambas y enteros
+    for s in pd:
+        if a - 0.03 < s < a or b < s < b + 0.03:      # jambas
+            ax.add_patch(Rectangle((s - 0.0205, 0.041), 0.041, z1 - 0.041, fc="#f4a261", ec="k", lw=0.6, zorder=3))
+        else:
+            ax.add_patch(Rectangle((s - 0.0205, 0.041), 0.041, tope(s) - 0.041, fc=AZUL, ec=AZUL_OSC, lw=0.6))
+    # cadenetas (no cruzan el vano en la corrida alta)
+    for zc in (0.85, 1.70):
+        segs = [(s0, s1)] if zc < z0 - 0.1 else [(s0, a - 0.0615), (b + 0.0615, s1)]
+        for sa, sb in segs:
+            ax.add_patch(Rectangle((sa, zc - 0.0325), sb - sa, 0.065, fc="#cfe0ef", ec=AZUL_OSC, lw=0.4))
+    # antepecho doble
+    ax.add_patch(Rectangle((a, z0 - 0.082), b - a, 0.082, fc="#e76f51", ec="k", zorder=4))
+    # muñecos inferiores
+    for s in muñecos_inf(v):
+        ax.add_patch(Rectangle((s - 0.0205, 0.041), 0.041, z0 - 0.082 - 0.041, fc="#f6bd60", ec="k", lw=0.6))
+    # dintel
+    ax.add_patch(Rectangle((a - 0.041, z1), b - a + 0.082, hd, fc="#c0392b", ec="k", zorder=4))
+    # sobre el dintel: muñecos superiores (V1) o calce (V2)
+    if v["muro"] == "der":
+        for s in [a + (b - a) * k / 4 for k in (1, 2, 3)]:
+            ax.add_patch(Rectangle((s - 0.0205, z1 + hd), 0.041, tope(s) - z1 - hd, fc="#f6bd60", ec="k", lw=0.6))
+    else:
+        ax.add_patch(Rectangle((a - 0.041, z1 + hd), b - a + 0.082, tope(a) - z1 - hd, fc="#f6bd60", ec="k", lw=0.6))
+    # ventana
+    ax.add_patch(Rectangle((a + 0.01, z0 + 0.01), b - a - 0.02, z1 - z0 - 0.02, fc="#bfe3f5", ec="#2c7fb8", lw=1.5, zorder=5))
+    ax.text((a + b) / 2, (z0 + z1) / 2, f'{v["n"]} {v["med"]}', ha="center", va="center", fontsize=8,
+            color="#1f4e79", weight="bold", zorder=6)
+    # tijerales encima
+    if v["muro"] == "der":
+        ax.add_patch(Polygon([(s0, tope(s0) + 0.082), (s1, tope(s1) + 0.082), (s1, tope(s1) + 0.082 + H_T),
+                              (s0, tope(s0) + 0.082 + H_T)], fc=MADERA, ec="k", alpha=0.7))
+        ax.text(1.0, tope(1.0) + 0.082 + H_T / 2, "tijeral T15 (apoyado a lo largo del muro)", ha="center",
+                va="center", fontsize=7)
+    else:
+        for n_, x, ye, lg in tij:
+            if s0 - 0.01 <= x <= s1 + 0.01:
+                ax.add_patch(Rectangle((x - 0.0205, tope(x) + 0.082), 0.041, H_T, fc=MADERA, ec="k"))
+                ax.text(x, tope(x) + 0.082 + H_T + 0.05, n_, ha="center", fontsize=7, color="#8b4513")
+    # cotas
+    def cota_h(xa, xb, z, t):
+        ax.annotate("", (xa, z), (xb, z), arrowprops=dict(arrowstyle="<->", lw=0.7))
+        ax.text((xa + xb) / 2, z - 0.08, t, ha="center", fontsize=7.5)
+    def cota_v(x, za, zb, t):
+        ax.annotate("", (x, za), (x, zb), arrowprops=dict(arrowstyle="<->", lw=0.7))
+        ax.text(x + 0.05, (za + zb) / 2, t, va="center", fontsize=7.5, rotation=90)
+    cota_h(a, b, -0.12, f"vano {b - a:.2f}")
+    cota_h(s0, s1, -0.32, f"muro {s1 - s0:.2f}")
+    cota_v(s1 + 0.12, 0, z0, f"{z0:.2f}")
+    cota_v(s1 + 0.32, 0, z1, f"{z1:.2f}")
+    # rótulos
+    lab = [((a - 0.0615, 1.0), (s0 + 0.0 if v["muro"] == "der" else a - 0.45, 0.5), "pie derecho\nentero"),
+           ((a - 0.0205, 1.4), (a - 0.40, 1.25) if v["muro"] == "der" else (a - 0.45, 1.25), "jamba\n(bajo dintel)"),
+
+           ((a + 0.3, z0 - 0.04), (a + 0.55, z0 - 0.45), "antepecho doble 2x3"),
+           ((muñecos_inf(v)[0], 0.9), ((a + b) / 2, 0.45), "muñecos 2x3 c/40"),
+           ((b + 0.3 if b + 0.3 < s1 else s1 - 0.05, 0.85), (s1 - 0.2, 0.55) if v["muro"] == "frente" else (s1 - 0.05, 0.4), "cadeneta")]
+    ax.text((a + b) / 2, z1 + hd / 2, f'DINTEL {v["dintel"]} de canto', ha="center", va="center",
+            fontsize=7.5, color="white", weight="bold", zorder=6)
+    lab.append(((a + 0.02, tope(a) - 0.03), (a - 0.40, 2.62) if v["muro"] == "der" else (a - 0.35, 2.75),
+                "muñecos sup." if v["muro"] == "der" else "calce 2x3"))
+    for p, t, tx in lab:
+        ax.annotate(tx, p, t, fontsize=7, ha="center", va="center",
+                    arrowprops=dict(arrowstyle="-", lw=0.6), bbox=dict(fc="white", ec="none", pad=0.5), zorder=8)
+    ax.set_xlim(s0 - 0.6, s1 + 0.5); ax.set_ylim(-0.45, 3.05)
+    if v["muro"] == "frente":
+        ax.invert_xaxis()   # vista desde afuera: el extremo de la terraza queda a la derecha
+    ax.set_title(titulo_e, fontsize=10, weight="bold")
+
+
+VUELO_PL = 0.08     # la plancha sobresale 8 cm desde la punta del tijeral (llega a >½ de la canal)
+
+def detalle_canal(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    ye = borde_techo(L)
+    y0 = ye - 0.45
+    # tijeral (punta cortada a plomo)
+    ax.add_patch(Polygon([(y0, zt(y0)), (ye, zt(ye)), (ye, zt(ye) - H_T), (y0, zt(y0) - H_T)], fc=MADERA, ec="k"))
+    # costaneras
+    for yr in [f for f in FILAS if f > y0]:
+        ax.add_patch(Rectangle((yr - 0.02, zt(yr)), 0.041, 0.041, fc="#c8a165", ec="k"))
+    # tapacán 1x8
+    zt_tap = zt(ye) + 0.041
+    ax.add_patch(Rectangle((ye, zt_tap - 0.185), 0.019, 0.185, fc="#b8860b", ec="k"))
+    # plancha (sobre costaneras) con vuelo y goterón
+    zp = lambda y: zt(y) + 0.041 + 0.004
+    yf = ye + VUELO_PL
+    ax.plot([y0, yf], [zp(y0), zp(yf)], color="#555", lw=3)
+    ax.plot([yf, yf + 0.006], [zp(yf), zp(yf) - 0.012], color="#555", lw=3)
+    # canaleta 110 mm (perfil) colgada del tapacán con gancho
+    yc0, yc1 = ye + 0.019, ye + 0.019 + 0.11
+    zr = zp(yf) - 0.035
+    perfil = [(yc0, zr + 0.01), (yc0, zr - 0.05), (yc0 + 0.02, zr - 0.075), (yc1 - 0.02, zr - 0.075),
+              (yc1, zr - 0.04), (yc1, zr - 0.005), (yc1 - 0.012, zr - 0.005)]
+    ax.add_patch(Polygon(perfil[:6], closed=False, fill=False, ec="#7b4a1e", lw=3))
+    ax.plot(*zip(*perfil[5:]), color="#7b4a1e", lw=3)
+    ax.plot([yc0 - 0.005, yc0, yc1 + 0.004, yc1 + 0.004], [zr - 0.06, zr + 0.012, zr + 0.012, zr - 0.005],
+            color="#333", lw=1.5)                                                      # gancho
+    ax.plot([ye - 0.03, ye + 0.03], [zr - 0.03] * 2, color="k", lw=1.5)               # tornillo
+    # agua
+    ax.annotate("", (yc0 + 0.05, zr - 0.06), (yf - 0.01, zp(yf) - 0.02),
+                arrowprops=dict(arrowstyle="->", color="#2c7fb8", lw=1.5, ls="--"))
+    # cotas
+    ax.annotate("", (yc0, zr - 0.13), (yc1, zr - 0.13), arrowprops=dict(arrowstyle="<->", lw=0.7))
+    ax.text((yc0 + yc1) / 2, zr - 0.155, "canal 11 cm", ha="center", fontsize=7.5)
+    ax.plot([(yc0 + yc1) / 2] * 2, [zr - 0.12, zr + 0.06], color="#c0392b", lw=0.8, ls=":")
+    ax.text((yc0 + yc1) / 2 + 0.005, zr + 0.075, "mitad", fontsize=7, color="#c0392b")
+    ax.annotate("", (ye, zp(ye) + 0.09), (yf, zp(yf) + 0.09), arrowprops=dict(arrowstyle="<->", lw=0.7))
+    ax.text((ye + yf) / 2, zp(ye) + 0.11, f"vuelo {VUELO_PL * 100:.0f} cm", ha="center", fontsize=7.5)
+    notas = [((ye - 0.2, zt(ye - 0.2) - 0.07), (ye - 0.33, zt(ye) - 0.27), "tijeral 2x6\n(punta a plomo)"),
+             ((ye + 0.01, zt_tap - 0.15), (ye - 0.10, zt(ye) - 0.33), "tapacán 1x8"),
+             ((ye - 0.30, zp(ye - 0.30)), (ye - 0.33, zt(ye) + 0.22), "plancha trapezoidal"),
+             ((ye + 0.02, zr - 0.03), (ye + 0.30, zr - 0.20), "gancho PVC c/50 cm\n+ tornillo 8x2\" al tapacán"),
+             ((yc1, zr - 0.04), (ye + 0.34, zr - 0.02), "canaleta PVC café\n110 mm, pend. 0,5 %\nhacia la bajada"),
+             ((yf + 0.004, zp(yf) - 0.006), (ye + 0.30, zp(yf) + 0.12),
+              "la plancha llega a MÁS\nde la mitad de la canal\n(con goterón)")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=7.5, ha="center", va="center",
+                    arrowprops=dict(arrowstyle="-", lw=0.6), bbox=dict(fc="white", ec="none", pad=0.5))
+    ax.set_xlim(ye - 0.50, ye + 0.48); ax.set_ylim(zt(ye) - 0.40, zt(ye) + 0.30)
+    ax.set_title("DETALLE 5 · canaleta en el alero (borde bajo)", fontsize=10, weight="bold")
+
+
 def titulo(fig, sub):
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16,
              weight="bold")
@@ -644,7 +853,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
         "    sismo y viento Simpson H3 por tijeral (uno por lado).\n"
         "3. ALTURA MURO EXTERIOR: 2,36 m bajo el tijeral (CONFIRMADA).\n"
         "    Así el techo pasa bajo el alero existente (2,86 m) con ≈10 % de pendiente.\n"
-        "4. Costaneras 2x2 cada 40 cm; plancha trapezoidal en una sola pieza (sin traslapo a lo largo).\n"
+        "4. Costaneras 2x2 c/40 cm; plancha en una sola pieza, vuela 8 cm sobre la canaleta (DET. 5).\n"
         "5. Tijerales 2x6 pino IPV cada 60 cm. Cubierta translúcida en terraza e\n"
         "    intercalada (translúcida / opaca) en bodega.\n"
         "6. Bodega: tabique 2x3 IPV c/40 cm en 3 lados (contra la casa no lleva tabique),\n"
@@ -703,6 +912,15 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
         ("TORNILLOS (sin clavos · detalle en planilla Excel)", [
             [TIPOS[k], "", str(v), ""] for k, v in sorted(TOT_TORN.items())
         ]),
+        ("VENTANAS (2)", [
+            ["Ventana V1 (muro lateral 2,5 m)", "aluminio 150 x 30 cm", "1", "vano 152 x 32; borde sup. ~2,0 m"],
+            ["Ventana V2 (muro frente a la casa)", "aluminio 200 x 30 cm", "1", "vano 202 x 32; borde sup. ~2,0 m"],
+            ["Dintel V2 (de canto)", "Pino IPV 2x8 x 3,20", "1", "2,10 m, recibe 3 tijerales"],
+            ["Dintel V1 (de canto)", "Pino IPV 2x6 x 3,20", "1", "1,60 m"],
+            ["Refuerzos: antepecho doble, muñecos, calce", "Pino IPV 2x3 x 3,20", str(N_VEN_2X3), "jambas y p.d. enteros ya incluidos arriba"],
+            ["Botaguas sobre ventanas", "zincalum (de las planchas lisas)", "2", "con sello"],
+            ["Silicona neutra exterior", "cartucho", "1", "sello perimetral ventanas"],
+        ]),
         ("BODEGA – REVESTIMIENTOS", [
             ["SmartPanel exterior", "1,22 x 2,44", "11", "~18 m², pintar"],
             ["Contrachapado ranurado interior", "1,22 x 2,44", "10", "~18 m² (sin muro de la casa)"],
@@ -757,3 +975,24 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
         "    y tornillo exterior 8x2\" al muro / tijeral (c/40 cm). Sin clavos."),
         fontsize=9, va="top", linespacing=1.45)
     pdf.savefig(fig); fig.savefig(OUT + "5_hojalateria.png", dpi=110); plt.close(fig)
+
+    fig = plt.figure(figsize=(16.5, 11.7))
+    titulo(fig, "Lámina 6: VENTANAS, REFUERZOS Y CANALETA")
+    elevacion(fig.add_axes([0.01, 0.40, 0.40, 0.50]), VENTANAS[0])
+    elevacion(fig.add_axes([0.40, 0.40, 0.59, 0.50]), VENTANAS[1])
+    detalle_canal(fig.add_axes([0.60, 0.01, 0.39, 0.345]))
+    ax = fig.add_axes([0.04, 0.04, 0.55, 0.33]); ax.axis("off")
+    ax.text(0, 1, "REFUERZOS EN CADA VANO DE VENTANA", fontsize=11, weight="bold", va="top")
+    ax.text(0, 0.88, (
+        "1. A cada lado del vano: un PIE DERECHO ENTERO (de solera a solera) + una JAMBA pegada a él, que sostiene el dintel.\n"
+        "2. DINTEL de canto sobre las jambas: V2 (2,0 m) en 2x8 porque recibe los tijerales T10 a T13; V1 (1,5 m) en 2x6.\n"
+        "    Sobre el dintel: en V2 un calce 2x3 hasta la solera; en V1 muñecos cortos (el muro sube con la pendiente).\n"
+        "3. ANTEPECHO DOBLE 2x3 tendido bajo la ventana, a 1,71 m; bajo él, MUÑECOS 2x3 cada 40 cm (siguen la modulación).\n"
+        "4. Los pies derechos que caían dentro del vano se reemplazan por los muñecos. La corrida alta de cadenetas (1,70 m)\n"
+        "    se interrumpe en el vano: el antepecho hace ese trabajo.\n"
+        "5. Ventanas centradas en cada muro: V1 entre 0,24 y 1,76 m desde la casa; V2 centrada en el muro de 3,15 m.\n"
+        "6. Borde superior del vano a 2,03 m (ventana ~2,0 m, alineada con la puerta). No puede ir el antepecho a 2,0 m: no\n"
+        "    queda altura para el dintel bajo los tijerales (el muro exterior mide 2,36 m).\n"
+        "7. Ventanas de aluminio (fijas o proyectantes) a medida, con botaguas de zincalum arriba y sello de silicona."),
+        fontsize=8.3, va="top", linespacing=1.5)
+    pdf.savefig(fig); fig.savefig(OUT + "6_ventanas.png", dpi=110); plt.close(fig)

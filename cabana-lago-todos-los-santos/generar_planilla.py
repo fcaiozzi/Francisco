@@ -98,6 +98,16 @@ add(g, "Puerta exterior", "Pino radiata maciza 80 x 200 cm", 1, "unidad", 1, 149
 add(g, "Marco puerta exterior", "Marco pino 80 x 200", 1, "unidad", 1, 35000, EST, "", "")
 add(g, "Bisagras", "3½\" acero", 3, "unidad", 3, 3000, EST, "", "")
 add(g, "Cerradura exterior", "Con llave", 1, "unidad", 1, 25000, EST, "", "")
+g = "4b. VENTANAS (2)"
+add(g, "Ventana V1 – muro lateral 2,5 m", "Aluminio fija/proyectante 150 x 30 cm", 1, "unidad", 1, 45000, EST,
+    "a medida; vano 152 x 32, borde superior ~2,0 m", "")
+add(g, "Ventana V2 – muro frente a la casa", "Aluminio fija/proyectante 200 x 30 cm", 1, "unidad", 1, 55000, EST,
+    "a medida; vano 202 x 32, borde superior ~2,0 m", "")
+add(g, "Dintel V2 (de canto, 2,10 m)", "Pino IPV 2x8 x 3,20 m", 1, "pieza", 1, 20990, EST, "recibe tijerales T10 a T13", "")
+add(g, "Dintel V1 (de canto, 1,60 m)", "Pino IPV 2x6 x 3,20 m", 1, "pieza", 1, 14990, EASY, "", L["2x6"])
+add(g, "Refuerzos: antepecho doble, muñecos, calce", "Pino IPV 2x3 x 3,20 m", ns["N_VEN_2X3"], "pieza", ns["N_VEN_2X3"], 4790, SOD,
+    "jambas y pies derechos enteros ya incluidos en 'Pies derechos'", L["2x3"])
+add(g, "Silicona neutra exterior", "Cartucho", 1, "unidad", 1, 4990, EST, "sello perimetral; botaguas salen de las planchas lisas", "")
 g = "5. BODEGA – REVESTIMIENTOS"
 add(g, "SmartPanel exterior", "LP SmartSide 11,1 mm 1,22 x 2,44", 11, "plancha", 11, 35290, SOD, "", L["smart"])
 add(g, "Contrachapado ranurado interior", "Terciado ranurado 9 mm 1,22 x 2,44", 10, "plancha", 10, 18820, SOD, "", L["terciado"])
@@ -223,7 +233,7 @@ notas = [
     "8. La bodega NO lleva tabique contra el muro de la casa: se usa el muro existente.",
     "   El H3 viene izquierdo o derecho: pedir la mitad de cada uno (uno por lado en cada tijeral).",
     "9. Canaleta y accesorios: comprar todo de la MISMA marca/sistema (DVP o Hoffens) para que calcen.",
-    "10. No incluye: flete, mano de obra, pintura del SmartPanel, sellos/cintas, ni las ventanas (se agregarán después).",
+    "10. No incluye: flete, mano de obra, pintura del SmartPanel, sellos/cintas.",
 ]
 for i, t in enumerate(notas, 1):
     wn.cell(i, 1, t).font = Font(bold=(i == 1), size=12 if i == 1 else 10)

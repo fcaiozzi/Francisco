@@ -812,6 +812,97 @@ def detalle_canal(ax):
     ax.set_title("DETALLE 5 · canaleta en el alero (borde bajo)", fontsize=10, weight="bold")
 
 
+# ---------------- Lámina 7: FACHADA LATERAL BODEGA ----------------
+def fachada_lateral(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    v = VENTANAS[0]
+    ye = borde_techo(L)
+    wtop = lambda y: zt(y) - H_T
+    # casa existente (a la izquierda)
+    ax.add_patch(Rectangle((-1.3, -0.15), 1.3, 2.86 + 0.15, fc="#e6e6e6", ec="k", hatch="//", lw=0.8))
+    zb = lambda y: 2.86 + 0.1356 * y
+    ax.add_patch(Polygon([(-1.3, zb(-1.3)), (0.45, zb(0.45)), (0.45, zb(0.45) + 0.05), (-1.3, zb(-1.3) + 0.05)],
+                         fc="#7f8c8d", ec="k"))
+    ax.text(-0.65, 1.3, "CASA\nEXISTENTE", ha="center", fontsize=9, weight="bold", bbox=dict(fc="white", ec="none"))
+    # piso / viga de piso y pilotes
+    ax.add_patch(Rectangle((0, -0.20), D, 0.20, fc="#a0784a", ec="k"))
+    for yp in (0.15, D - 0.15):
+        ax.add_patch(Rectangle((yp - 0.06, -0.75), 0.12, 0.55, fc="#8d6e4a", ec="k"))
+    ax.plot([-1.4, ye + 0.6], [-0.75, -0.75], color="#6b8e23", lw=1.5, ls="--")
+    ax.text(-1.35, -0.70, "terreno (referencial)", ha="left", fontsize=7, color="#6b8e23")
+    # muro lateral: SmartPanel (0..2,0) y ochavo (2,0..2,5) en escorzo
+    def panel(ya, yb, fc):
+        pts = [(ya, -0.20), (yb, -0.20), (yb, wtop(yb)), (ya, wtop(ya))]
+        ax.add_patch(Polygon(pts, fc=fc, ec="k", lw=1))
+        y = ya + 0.08
+        while y < yb - 0.01:
+            ax.plot([y, y], [-0.20, wtop(y)], color="#c9b79c", lw=0.5, zorder=2)
+            y += 0.08
+    panel(0.0, 2.0, "#e9dcc6")
+    panel(2.0, D, "#d8c8ad")
+    ax.text(2.25, 0.9, "ochavo\n(en escorzo)", ha="center", fontsize=7, color="#5a4a30")
+    # esquineros
+    for y in (0.0, 2.0, D - 0.07):
+        ax.add_patch(Rectangle((y, -0.20), 0.07, wtop(y) + 0.20, fc="#b8956a", ec="k", lw=0.6, zorder=3))
+    # junta horizontal (franja superior con cortagotera)
+    ax.plot([0.07, D - 0.07], [2.44 - 0.20, 2.44 - 0.20], color="#666", lw=1.2, ls=(0, (6, 2)), zorder=3)
+    # ventana V1
+    a, b = v["a"], v["b"]; z0, z1 = VEN_ALTO
+    ax.add_patch(Rectangle((a, z0), b - a, z1 - z0, fc="#9aa5ab", ec="k", zorder=4))
+    ax.add_patch(Rectangle((a + 0.03, z0 + 0.03), b - a - 0.06, z1 - z0 - 0.06, fc="#bfe3f5", ec="#2c7fb8", zorder=5))
+    ax.plot([a + 0.25, a + 0.45], [z0 + 0.06, z1 - 0.06], color="white", lw=1.5, zorder=6)
+    ax.plot([b - 0.40, b - 0.25], [z0 + 0.06, z1 - 0.06], color="white", lw=1.5, zorder=6)
+    ax.add_patch(Rectangle((a - 0.04, z1), b - a + 0.08, 0.015, fc="#5f6b73", ec="k", zorder=6))   # botaguas
+    ax.add_patch(Rectangle((a - 0.03, z0 - 0.02), b - a + 0.06, 0.02, fc="#5f6b73", ec="k", zorder=6))  # alféizar
+    # tijeral T15 + remate lateral (hojalatería)
+    ax.add_patch(Polygon([(0.041, zt(0.041)), (ye, zt(ye)), (ye, zt(ye) - H_T), (0.041, zt(0.041) - H_T)],
+                         fc=MADERA, ec="k", zorder=3))
+    ax.add_patch(Polygon([(0.0, zt(0) + 0.08), (ye + 0.02, zt(ye + 0.02) + 0.08),
+                          (ye + 0.02, zt(ye + 0.02) - 0.13), (0.0, zt(0) - 0.13)], fc="#7d8a91", ec="k", zorder=4))
+    # tapacán (canto) y canaleta (tapa lateral) + bajada
+    ax.add_patch(Rectangle((ye, zt(ye) + 0.041 - 0.185), 0.019, 0.185, fc="#b8860b", ec="k", zorder=5))
+    yc0, yc1 = ye + 0.019, ye + 0.129
+    zr = zt(ye + VUELO_PL) + 0.045 - 0.035
+    ax.add_patch(Polygon([(yc0, zr + 0.01), (yc1, zr), (yc1, zr - 0.04), (yc1 - 0.02, zr - 0.075),
+                          (yc0 + 0.02, zr - 0.075), (yc0, zr - 0.05)], fc="#7b4a1e", ec="k", zorder=6))
+    yb_ = (yc0 + yc1) / 2
+    ax.add_patch(Rectangle((yb_ - 0.04, -0.70), 0.08, zr - 0.075 + 0.70, fc="#8a5a2b", ec="k", zorder=5))
+    for zz in (2.0, 1.0, 0.1):
+        ax.add_patch(Rectangle((yb_ - 0.05, zz), 0.10, 0.03, fc="#5c3a1a", ec="k", zorder=6))
+    ax.add_patch(Polygon([(yb_ - 0.04, -0.70), (yb_ + 0.04, -0.70), (yb_ + 0.15, -0.74), (yb_ + 0.15, -0.66)],
+                         fc="#8a5a2b", ec="k", zorder=6))
+    # cotas
+    def cv(x, za, zb_, t, side=1):
+        ax.annotate("", (x, za), (x, zb_), arrowprops=dict(arrowstyle="<->", lw=0.7))
+        ax.text(x + 0.05 * side, (za + zb_) / 2, t, va="center", ha="left" if side > 0 else "right",
+                fontsize=8, rotation=90)
+    def ch(xa, xb, z, t):
+        ax.annotate("", (xa, z), (xb, z), arrowprops=dict(arrowstyle="<->", lw=0.7))
+        ax.text((xa + xb) / 2, z - 0.09, t, ha="center", fontsize=8)
+    cv(ye + 0.45, 0, wtop(D), f"{wtop(D):.2f}")
+    cv(0.25, 0, wtop(0), f"{wtop(0):.2f}")
+    cv(a - 0.12, 0, z0, f"{z0:.2f}", side=-1)
+    cv(b + 0.12, 0, z1, f"{z1:.2f}")
+    ch(0, a, 0.75, f"{a:.2f}"); ch(a, b, 0.75, f"{b - a:.2f}"); ch(b, 2.0, 0.75, f"{2.0 - b:.2f}")
+    ch(0, D, -0.95, "2,50 (bodega)"); ch(D, ye, -0.95, f"alero {ye - D:.2f}")
+    # rótulos
+    notas = [(((a + b) / 2, z1 + 0.01), ((a + b) / 2, 2.85), "botaguas zincalum"),
+             (((a + b) / 2, (z0 + z1) / 2), (1.0, 1.35), "V1 ventana aluminio 150 x 30"),
+             ((1.6, zt(1.6) - 0.05), (1.75, 3.10), "remate lateral zincalum (DET. 4)"),
+             ((0.6, 0.5), (0.9, 0.35), "SmartPanel (ranurado c/8 cm), pintado"),
+             ((2.035, 1.2), (1.60, 0.45), "esquinero"),
+             ((yb_, 1.4), (ye + 0.5, 1.6), "bajada PVC café Ø80\ncon abrazaderas"),
+             ((yb_, zr - 0.04), (ye + 0.55, 2.75), "canaleta PVC café\n(tapa lateral)"),
+             ((ye + 0.01, zt(ye) - 0.07), (ye + 0.40, 2.30), "tapacán 1x8"),
+             ((0.03, 2.30), (-0.40, 2.62), "forro contra\nmuro (DET. 3)")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=7.5, ha="center", va="center", zorder=9,
+                    arrowprops=dict(arrowstyle="-", lw=0.6), bbox=dict(fc="white", ec="none", pad=0.6))
+    ax.set_xlim(-1.5, ye + 1.0); ax.set_ylim(-1.1, 3.25)
+    ax.set_title("FACHADA LATERAL DE LA BODEGA (lado opuesto a la puerta) — vista desde afuera",
+                 fontsize=11, weight="bold")
+
+
 def titulo(fig, sub):
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16,
              weight="bold")
@@ -996,3 +1087,8 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
         "7. Ventanas de aluminio (fijas o proyectantes) a medida, con botaguas de zincalum arriba y sello de silicona."),
         fontsize=8.3, va="top", linespacing=1.5)
     pdf.savefig(fig); fig.savefig(OUT + "6_ventanas.png", dpi=110); plt.close(fig)
+
+    fig = plt.figure(figsize=(16.5, 11.7))
+    titulo(fig, "Lámina 7: FACHADA LATERAL BODEGA")
+    fachada_lateral(fig.add_axes([0.03, 0.05, 0.94, 0.85]))
+    pdf.savefig(fig); fig.savefig(OUT + "7_fachada_lateral.png", dpi=110); plt.close(fig)

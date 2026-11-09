@@ -903,6 +903,100 @@ def fachada_lateral(ax):
                  fontsize=11, weight="bold")
 
 
+# ---------------- Lámina 8: FACHADA PRINCIPAL (muro largo, frente a la casa) ----------------
+def fachada_frente(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    v = VENTANAS[1]
+    wtop = lambda y: zt(y) - H_T
+    xs = [i / 40 * L for i in range(41)]
+    # casa existente al fondo
+    ax.add_patch(Rectangle((-0.3, -0.20), L + 0.6, 2.86 + 0.20, fc="#eeeeee", ec="#999", lw=0.8, zorder=0))
+    ax.plot([-0.4, L + 0.4], [2.93, 2.93], color="#7f8c8d", lw=5, zorder=0)
+    ax.text(2.4, 2.7, "muro casa existente (al fondo)", ha="center", fontsize=8, color="#777", zorder=1)
+    # piso y pilotes
+    ax.add_patch(Rectangle((0, -0.20), L, 0.20, fc="#a0784a", ec="k", zorder=2))
+    for xp in (0.15, DIAG_X / 2, DIAG_X, XB + 0.15, L - 0.5):
+        ax.add_patch(Rectangle((xp - 0.06, -0.75), 0.12, 0.55, fc="#8d6e4a", ec="k", zorder=1))
+    ax.plot([-0.5, L + 0.6], [-0.75, -0.75], color="#6b8e23", lw=1.5, ls="--")
+    # terraza: pilares y viga sobre la diagonal
+    for px, py in PILARES:
+        ax.add_patch(Rectangle((px - 0.045, 0), 0.09, wtop(py) - 0.138, fc="#6d5a45", ec="k", zorder=3))
+    vx = [0, DIAG_X / 2, DIAG_X, XB]; vy = [prof(x) for x in vx]
+    top = [wtop(y) for y in vy]
+    ax.add_patch(Polygon(list(zip(vx, top)) + list(zip(vx[::-1], [t - 0.138 for t in top[::-1]])),
+                         fc="#c9a46a", ec="k", zorder=3))
+    ax.text(1.9, 0.9, "TERRAZA TECHADA", ha="center", fontsize=11, weight="bold", color="#6b4f1d", zorder=4)
+    # bodega: muro frente + ochavo (escorzo)
+    def panel(xa, xb, ya, yb, fc):
+        pts = [(xa, -0.20), (xb, -0.20), (xb, wtop(yb)), (xa, wtop(ya))]
+        ax.add_patch(Polygon(pts, fc=fc, ec="k", lw=1, zorder=4))
+        x = xa + 0.08
+        while x < xb - 0.01:
+            t = (x - xa) / (xb - xa)
+            ax.plot([x, x], [-0.20, wtop(ya + (yb - ya) * t)], color="#c9b79c", lw=0.5, zorder=4)
+            x += 0.08
+    panel(XB, L - 0.35, D, D, "#e9dcc6")
+    panel(L - 0.35, L, D, 2.0, "#d8c8ad")
+    for x in (XB, L - 0.35 - 0.035, L - 0.07):
+        ax.add_patch(Rectangle((x, -0.20), 0.07, 2.56, fc="#b8956a", ec="k", lw=0.6, zorder=5))
+    ax.plot([XB + 0.07, L - 0.42], [2.24] * 2, color="#666", lw=1.2, ls=(0, (6, 2)), zorder=5)
+    # ventana V2
+    a, b = v["a"], v["b"]; z0, z1 = VEN_ALTO
+    ax.add_patch(Rectangle((a, z0), b - a, z1 - z0, fc="#9aa5ab", ec="k", zorder=6))
+    ax.add_patch(Rectangle((a + 0.03, z0 + 0.03), b - a - 0.06, z1 - z0 - 0.06, fc="#bfe3f5", ec="#2c7fb8", zorder=7))
+    for xx in (a + 0.4, b - 0.6):
+        ax.plot([xx, xx + 0.18], [z0 + 0.06, z1 - 0.06], color="white", lw=1.5, zorder=8)
+    ax.add_patch(Rectangle((a - 0.04, z1), b - a + 0.08, 0.015, fc="#5f6b73", ec="k", zorder=8))
+    ax.add_patch(Rectangle((a - 0.03, z0 - 0.02), b - a + 0.06, 0.02, fc="#5f6b73", ec="k", zorder=8))
+    ax.text((XB + L) / 2, 0.9, "BODEGA", ha="center", fontsize=11, weight="bold", color="#1f4e79", zorder=6)
+    # alero: tapacán 1x8 y canaleta a lo largo del borde
+    ze = [zt(borde_techo(x)) for x in xs]
+    ax.add_patch(Polygon([(x, z + 0.041) for x, z in zip(xs, ze)] + [(x, z + 0.041 - 0.185) for x, z in zip(xs[::-1], ze[::-1])],
+                         fc="#b8860b", ec="k", zorder=6))
+    zc = [zt(borde_techo(x) + VUELO_PL) + 0.045 - 0.035 for x in xs]
+    ax.add_patch(Polygon([(x, z + 0.01) for x, z in zip(xs, zc)] + [(x, z - 0.075) for x, z in zip(xs[::-1], zc[::-1])],
+                         fc="#7b4a1e", ec="k", zorder=7))
+    ax.plot(xs, [z + 0.06 for z in ze], color="#555", lw=2.5, zorder=6)          # canto de la plancha
+    # remates laterales (cantos)
+    for x in (0, L):
+        ax.add_patch(Rectangle((x - 0.02, ze[0 if x == 0 else -1] - 0.13), 0.04, 0.24, fc="#7d8a91", ec="k", zorder=8))
+    # bajada en la esquina de la bodega
+    zb0 = zc[-1] - 0.075
+    ax.add_patch(Rectangle((L - 0.04, -0.70), 0.08, zb0 + 0.70, fc="#8a5a2b", ec="k", zorder=8))
+    for zz in (2.0, 1.0, 0.1):
+        ax.add_patch(Rectangle((L - 0.05, zz), 0.10, 0.03, fc="#5c3a1a", ec="k", zorder=9))
+    # cotas (vista desde afuera: eje invertido)
+    def ch(xa, xb, z, t):
+        ax.annotate("", (xa, z), (xb, z), arrowprops=dict(arrowstyle="<->", lw=0.7), zorder=11)
+        ax.text((xa + xb) / 2, z - 0.10, t, ha="center", fontsize=8, zorder=11,
+                bbox=dict(fc="white", ec="none", pad=0.3))
+    def cv(x, za, zb_, t):
+        ax.annotate("", (x, za), (x, zb_), arrowprops=dict(arrowstyle="<->", lw=0.7), zorder=11)
+        ax.text(x - 0.05, (za + zb_) / 2, t, va="center", fontsize=8, rotation=90, zorder=11,
+                bbox=dict(fc="white", ec="none", pad=0.3))
+    ch(0, L, -1.15, "8,25"); ch(0, XB, -0.95, "terraza 4,75"); ch(XB, L, -0.95, "bodega 3,50")
+    ch(XB, a, 0.55, f"{a - XB:.2f}"); ch(a, b, 0.55, f"V2 {b - a:.2f}"); ch(b, L - 0.35, 0.55, f"{L - 0.35 - b:.2f}")
+    cv(XB - 0.15, 0, wtop(D), f"{wtop(D):.2f}")
+    cv(a - 0.12, 0, z0, f"{z0:.2f}"); cv(b + 0.15, 0, z1, f"{z1:.2f}")
+    notas = [(((a + b) / 2, (z0 + z1) / 2), ((a + b) / 2, 1.35), "V2 ventana aluminio 200 x 30"),
+             (((a + b) / 2, z1 + 0.01), ((a + b) / 2 + 0.6, 3.10), "botaguas zincalum"),
+             ((5.2, 0.3), (5.6, 0.2), "SmartPanel pintado"),
+             ((L - 0.18, 1.2), (L + 0.45, 1.6), "ochavo"),
+             ((L, 1.5), (L + 0.45, 1.0), "bajada PVC café Ø80"),
+             ((6.0, zc[29] - 0.03), (6.0, 3.10), "canaleta PVC café"),
+             ((2.6, ze[13] - 0.05), (2.6, 3.10), "tapacán 1x8"),
+             ((1.65, 1.2), (1.1, 1.5), "pilar 4x4"),
+             ((2.4, top[1] - 0.07), (2.9, 1.75), "viga 2x6 doble"),
+             ((0, ze[0]), (-0.35, 3.10), "remate lateral")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=7.5, ha="center", va="center", zorder=10,
+                    arrowprops=dict(arrowstyle="-", lw=0.6), bbox=dict(fc="white", ec="none", pad=0.6))
+    ax.set_xlim(-0.7, L + 0.8); ax.set_ylim(-1.35, 3.25)
+    ax.invert_xaxis()
+    ax.set_title("FACHADA PRINCIPAL (muro largo, frente opuesto a la casa) — vista desde afuera",
+                 fontsize=11, weight="bold")
+
+
 def titulo(fig, sub):
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16,
              weight="bold")
@@ -1092,3 +1186,8 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
     titulo(fig, "Lámina 7: FACHADA LATERAL BODEGA")
     fachada_lateral(fig.add_axes([0.03, 0.05, 0.94, 0.85]))
     pdf.savefig(fig); fig.savefig(OUT + "7_fachada_lateral.png", dpi=110); plt.close(fig)
+
+    fig = plt.figure(figsize=(16.5, 11.7))
+    titulo(fig, "Lámina 8: FACHADA PRINCIPAL")
+    fachada_frente(fig.add_axes([0.02, 0.05, 0.96, 0.85]))
+    pdf.savefig(fig); fig.savefig(OUT + "8_fachada_principal.png", dpi=110); plt.close(fig)

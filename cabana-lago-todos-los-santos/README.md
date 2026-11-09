@@ -6,7 +6,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 
 | Archivo | Qué es |
 |---|---|
-| `ampliacion_cabana.pdf` | Planos completos en A3 (7 láminas) |
+| `ampliacion_cabana.pdf` | Planos completos en A3 (8 láminas) |
 | `materiales_ampliacion_cabana.xlsx` | Lista de materiales valorizada (Sodimac / Easy / Imperial) |
 | `1_planta.png` | Lámina 1: planta, tijerales y planchas |
 | `2_isometrico.png` | Lámina 2: isométrico |
@@ -15,6 +15,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 | `5_hojalateria.png` | Lámina 5: hojalatería de remate, detalles 3 y 4 |
 | `6_ventanas.png` | Lámina 6: elevaciones con ventanas y refuerzos, detalle 5 (canaleta) |
 | `7_fachada_lateral.png` | Lámina 7: fachada lateral de la bodega terminada |
+| `8_fachada_principal.png` | Lámina 8: fachada principal (bodega con V2 + terraza) |
 | `generar_planos.py` | Programa que dibuja las láminas y el PDF |
 | `generar_planilla.py` | Programa que arma la planilla Excel |
 

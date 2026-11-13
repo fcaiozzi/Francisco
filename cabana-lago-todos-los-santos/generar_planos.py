@@ -42,7 +42,7 @@ def largo_plancha(x0, x1):
 tij = []
 for i, x in enumerate(xs_ter + xs_bod, 1):
     ye = borde_techo(x)
-    tij.append((f"T{i}", x, ye, ye * math.sqrt(1 + PEND ** 2)))
+    tij.append((f"T{i}", x, ye, (ye - 0.041) * math.sqrt(1 + PEND ** 2)))
 
 PUERTA = (1.00, 1.88)
 
@@ -997,6 +997,136 @@ def fachada_frente(ax):
                  fontsize=11, weight="bold")
 
 
+# ---------------- Lámina 9: DETALLE DE TIJERALES ----------------
+ANG_PEND = math.degrees(math.atan(PEND))                       # ~5,7°
+ANG_BISEL = math.degrees(math.atan((D - Y0) / DIAG_X))          # ~23,6° (borde diagonal en planta)
+Y_INI = 0.041                                                   # cara de la viga 2x8 apernada al muro
+def largo_corte(x):
+    return (borde_techo(x) - Y_INI) * math.sqrt(1 + PEND ** 2)
+def apoyo_ext(x):
+    return prof(x)                                              # muro bodega o viga de terraza
+
+def tijeral_tipo_a(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    ye = borde_techo(L)
+    # casa + viga 2x8 + soporte Simpson
+    ax.add_patch(Rectangle((-0.30, 2.0), 0.30, 0.95, fc="#e6e6e6", ec="k", hatch="//"))
+    zl = zt(0) - H_T; zv = zl + H_T - H_V
+    ax.add_patch(Rectangle((0, zv), 0.041, H_V, fc="#c0392b", ec="k"))
+    ax.add_patch(Rectangle((0.041, zl - 0.004), 0.06, 0.13, fill=False, ec="#333", lw=2, zorder=6))
+    # muro bodega (2x3 + solera doble) bajo el apoyo exterior
+    zw = zt(D) - H_T
+    ax.add_patch(Rectangle((D - 0.065, 1.95), 0.065, zw - 0.082 - 1.95, fc="#d9e8f5", ec="#1f4e79"))
+    ax.add_patch(Rectangle((D - 0.065, zw - 0.082), 0.065, 0.082, fc="#9dbbd9", ec="#1f4e79"))
+    ax.add_patch(Rectangle((D - 0.09, zw - 0.07), 0.05, 0.15, fc="#333", ec="k", zorder=6))   # H3
+    # tijeral
+    ax.add_patch(Polygon([(Y_INI, zt(Y_INI)), (ye, zt(ye)), (ye, zt(ye) - H_T), (Y_INI, zt(Y_INI) - H_T)],
+                         fc=MADERA, ec="k", lw=1.5, zorder=4))
+    for yr in FILAS:
+        ax.add_patch(Rectangle((yr - 0.02, zt(yr)), 0.041, 0.041, fc="#c8a165", ec="k", zorder=5))
+    ax.plot([0, ye + VUELO_PL], [zt(0) + 0.05, zt(ye + VUELO_PL) + 0.05], color="#555", lw=2.5, zorder=5)
+    ax.add_patch(Rectangle((ye, zt(ye) + 0.041 - 0.185), 0.019, 0.185, fc="#b8860b", ec="k", zorder=5))
+    # cotas
+    def ch(ya, yb, z, t):
+        ax.annotate("", (ya, z), (yb, z), arrowprops=dict(arrowstyle="<->", lw=0.7))
+        ax.text((ya + yb) / 2, z - 0.07, t, ha="center", fontsize=8.5, bbox=dict(fc="white", ec="none", pad=0.3))
+    ch(Y_INI, D, 1.85, f"apoyo a apoyo {D - Y_INI:.2f} (horizontal)")
+    ch(D, ye, 1.85, f"alero {ye - D:.2f}")
+    ch(Y_INI, ye, 1.65, f"proyección horizontal {ye - Y_INI:.2f}")
+    # largo de corte (a lo largo de la pieza)
+    ax.annotate("", (Y_INI, zt(Y_INI) + 0.30), (ye, zt(ye) + 0.30), arrowprops=dict(arrowstyle="<->", lw=0.8, color="#8b4513"))
+    ax.text((Y_INI + ye) / 2, zt((Y_INI + ye) / 2) + 0.20, f"LARGO DE CORTE {largo_corte(L):.2f} m (pieza 2x6 x 3,20)",
+            ha="center", fontsize=9.5, weight="bold", color="#8b4513", rotation=-ANG_PEND)
+    # pendiente
+    ax.plot([1.0, 2.0, 2.0, 1.0], [2.30, 2.30, 2.20, 2.30], color="#2c7fb8", lw=1)
+    ax.text(1.5, 2.32, "100", ha="center", fontsize=7.5, color="#2c7fb8")
+    ax.text(2.03, 2.23, f"10  (pendiente {ANG_PEND:.1f}°)", fontsize=7.5, color="#2c7fb8")
+    notas = [((0.07, zl + 0.02), (0.45, 2.15), "soporte Simpson 2x6 ZMAX\n(muro casa)"),
+             ((0.02, zv + 0.03), (-0.15, 1.90), "viga 2x8\napernada"),
+             ((Y_INI, zt(Y_INI) - 0.07), (-0.13, 3.07), "corte a plomo\n(ver detalle)"),
+             ((D - 0.065, zw - 0.02), (D - 0.45, 2.10), "H3 uno por lado"),
+             ((D - 0.03, 2.1), (D + 0.25, 2.0), "muro bodega 2x3\n(o viga terraza)"),
+             ((ye - 0.01, zt(ye) - 0.07), (ye + 0.25, 2.55), "corte a plomo\n+ tapacán 1x8"),
+             ((FILAS[6], zt(FILAS[6]) + 0.04), (2.75, 3.07), "costaneras 2x2 c/40")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=7.5, ha="center", va="center", zorder=9,
+                    arrowprops=dict(arrowstyle="-", lw=0.6), bbox=dict(fc="white", ec="none", pad=0.5))
+    ax.set_xlim(-0.35, ye + 0.5); ax.set_ylim(1.55, 3.15)
+    ax.set_title("TIJERAL TIPO A (T7 a T15) · 2x6 pino IPV c/60 cm — elevación", fontsize=10, weight="bold")
+
+def corte_plomo(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    h = H_T; off = h * PEND
+    # pieza vista de costado, eje inclinado
+    ang = math.radians(-ANG_PEND)
+    def R(x, z):
+        return (x * math.cos(ang) - z * math.sin(ang), x * math.sin(ang) + z * math.cos(ang))
+    # pieza en coordenadas propias (x a lo largo, z perpendicular)
+    largo = 0.40
+    # la cara vertical (plomo) en coords globales: x = 0
+    pts = [(0, 0), (0, h / math.cos(math.radians(ANG_PEND)))]
+    top0 = pts[1][1]
+    ax.add_patch(Polygon([(0, 0), (0, top0), (largo, top0 - largo * PEND), (largo, -largo * PEND)],
+                         fc=MADERA, ec="k", lw=1.5))
+    ax.plot([0, 0], [-0.04, top0 + 0.04], color="#c0392b", lw=1, ls="--")
+    ax.text(-0.012, top0 + 0.055, "vertical (a plomo)", fontsize=7.5, color="#c0392b", ha="center")
+    # escuadra de la pieza
+    ax.plot([0, off], [top0, top0 - off * PEND + 0], color="k", lw=0.5)
+    ax.plot([off, off], [-off * PEND, top0 - off * PEND], color="#2c7fb8", lw=1, ls=":")
+    ax.annotate("", (0, -0.03), (off, -0.03), arrowprops=dict(arrowstyle="<->", lw=0.7))
+    ax.text(off / 2, -0.055, f"{off * 1000:.0f} mm", ha="center", fontsize=8)
+    ax.text(0.20, 0.06, f"2x6 ({h * 1000:.0f} mm)", fontsize=8)
+    ax.text(0.03, top0 + 0.12, f"Marcar la escuadra y correr {off * 1000:.0f} mm\n(= ángulo de {ANG_PEND:.1f}°) para que el\ncorte quede vertical una vez colocado.",
+            fontsize=8, va="bottom")
+    ax.set_xlim(-0.12, 0.45); ax.set_ylim(-0.10, 0.42)
+    ax.set_title("DETALLE · corte a plomo (ambos extremos)", fontsize=10, weight="bold")
+
+def tijerales_tipo_b(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    # planta de la zona diagonal
+    ax.add_patch(Rectangle((-0.3, -0.35), XB + 0.4, 0.35, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.plot([0, XB], [0.02, 0.02], color="#c0392b", lw=4)
+    piso_t = [(0, 0), (XB, 0), (XB, D), (DIAG_X, D), (0, Y0)]
+    ax.add_patch(Polygon(piso_t, fc="#f3e3c7", ec="k"))
+    ax.plot([0, DIAG_X, XB], [borde_techo(0), borde_techo(DIAG_X), borde_techo(XB)], color="#b8860b", lw=2, ls="-.")
+    vx = [0, DIAG_X, XB]; ax.plot(vx, [prof(x) for x in vx], color="#555", lw=3, ls="--")
+    for n_, x, ye, lg in tij:
+        if x <= XB + 1e-6:
+            ax.plot([x, x], [Y_INI, ye], color="#8b4513", lw=3)
+            ax.text(x, ye + 0.12, n_, ha="center", fontsize=7.5, color="#8b4513", weight="bold")
+    # ángulo de bisel
+    x0 = xs_ter[3]; y0 = borde_techo(x0)
+    ax.text(0.45, 3.30, f"punta en bisel {ANG_BISEL:.1f}°\n(paralela al tapacán)", fontsize=8,
+            color="#c0392b", weight="bold")
+    ax.text(1.0, 0.6, "TERRAZA", fontsize=10, weight="bold", color="#6b4f1d")
+    ax.text(2.6, 1.15, "viga 2x6 doble\nsobre la diagonal", fontsize=7.5, rotation=ANG_BISEL)
+    ax.text(0.2, 2.25, "borde de techo (tapacán)", fontsize=7.5, color="#b8860b", rotation=ANG_BISEL)
+    ax.set_xlim(-0.4, XB + 0.3); ax.set_ylim(-0.45, 3.5); ax.invert_yaxis()
+    ax.set_title(f"TIJERALES TIPO B (T1 a T6) · planta — punta con corte compuesto (plomo {ANG_PEND:.1f}° + bisel {ANG_BISEL:.1f}°)",
+                 fontsize=10, weight="bold")
+
+def tabla_corte(ax):
+    ax.axis("off")
+    filas = []
+    for n_, x, ye, lg in tij:
+        tipo = "B" if x < DIAG_X else "A"
+        lc = largo_corte(x)
+        ap = apoyo_ext(x)
+        donde = "muro" if x > XB - 1e-6 else "viga"
+        punta = f"plomo + bisel {ANG_BISEL:.0f}°" if tipo == "B" else "plomo"
+        filas.append([n_, tipo, f"{x:.2f}", f"{lc:.2f}", f"{ap:.2f} ({donde})", punta, f"{3.20 - lc:.2f}"])
+    t = ax.table(cellText=filas, colLabels=["Tijeral", "Tipo", "Posición", "Largo corte",
+                                            "Apoyo ext. a", "Punta", "Sobrante"],
+                 loc="upper center", cellLoc="center", colWidths=[0.10, 0.08, 0.12, 0.14, 0.18, 0.22, 0.14])
+    ax.text(0.0, 0.08, ("Medidas en metros. 'Apoyo ext. a' = distancia desde el muro de la casa al muro de bodega o viga de terraza.\n"
+                        "Ahorro: T1 (1,43) y T2 (1,69) salen de UNA misma pieza de 3,20 → bastan 14 piezas (se compran 15 por seguridad).\n"
+                        "Junto a la casa: punta a plomo, de tope en el soporte Simpson 2x6. En el apoyo exterior: sin rebaje, 2 H3."),
+            fontsize=8, va="top", transform=ax.transAxes)
+    t.auto_set_font_size(False); t.set_fontsize(7.5); t.scale(1, 1.15)
+    ax.set_title("TABLA DE CORTE · 15 tijerales 2x6 x 3,20 (junto a la casa siempre corte a plomo, de tope en soporte Simpson)",
+                 fontsize=9.5, weight="bold")
+
+
 def titulo(fig, sub):
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16,
              weight="bold")
@@ -1191,3 +1321,11 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
     titulo(fig, "Lámina 8: FACHADA PRINCIPAL")
     fachada_frente(fig.add_axes([0.02, 0.05, 0.96, 0.85]))
     pdf.savefig(fig); fig.savefig(OUT + "8_fachada_principal.png", dpi=110); plt.close(fig)
+
+    fig = plt.figure(figsize=(16.5, 11.7))
+    titulo(fig, "Lámina 9: DETALLE DE TIJERALES")
+    tijeral_tipo_a(fig.add_axes([0.02, 0.50, 0.62, 0.40]))
+    corte_plomo(fig.add_axes([0.66, 0.52, 0.32, 0.36]))
+    tijerales_tipo_b(fig.add_axes([0.02, 0.03, 0.46, 0.44]))
+    tabla_corte(fig.add_axes([0.50, 0.03, 0.48, 0.44]))
+    pdf.savefig(fig); fig.savefig(OUT + "9_tijerales.png", dpi=110); plt.close(fig)

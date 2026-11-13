@@ -51,9 +51,9 @@ def add(g, it, med, nec, uv, comp, pr, tienda, nota="", link=""):
     G.append((g, it, med, nec, uv, comp, pr, tienda, nota, link))
 
 g = "1. ESTRUCTURA DE TECHO"
-add(g, "Tijerales c/60 cm", "Pino IPV 2x6 x 3,20 m", 15, "pieza", 15, 14990, EASY, "micronizado", L["2x6"])
-add(g, "Viga 2x8 apernada al muro (tijerales de tope)", "Pino IPV 2x8 x 3,20 m", 3, "pieza", 3, 20990, EST,
-    "2x8 impregnado no apareció en web. Alternativa: 2x8 cepillado seco Sodimac $15.790 + preservante", "")
+add(g, "Tijerales c/60 cm", "Pino IPV 2x6½\" x 3,20 m", 15, "pieza", 15, 14990, EST, "precio ref. 2x6 IPV Easy; confirmar 2x6½\"", L["2x6"])
+add(g, "Tabla 1x10 apernada al muro (tijerales de tope)", "Pino 1x10 cepillado 4 caras x 3,20 m", 3, "pieza", 3, 7490, EST,
+    "borde bajo a 2,63 m; tornillos del soporte deben anclar en el muro", "")
 add(g, "Costaneras c/40 cm", "Pino IPV 2x2 x 3,20 m", ns["N_COST"], "pieza", ns["N_COST"], 2890, EASY, "", L["2x2"])
 add(g, "Tapacán vertical", "Tabla pino seco cepillado 1x8 x 3,20 m", 3, "pieza", 3, 5950, SOD,
     "1x8 impregnado no apareció en web; pintar o aplicar preservante en todas las caras", L["1x8"])
@@ -231,8 +231,8 @@ notas = [
     "4. Si el ancho útil de la plancha que compres no es ~1,0 m, cambia la cantidad de planchas (ver lámina 1 del plano).",
     "5. Tijerales, viga y bloqueos en 2x6 impregnado de 3,20 m: precio de Easy (en Sodimac el 2x6 IPV aparecía solo en 4,0 y 4,8 m).",
     "6. Soportes Simpson en Imperial: soporte viga 2x6 ZMAX (SKU 142184, $2.590) y H3 (SKU 142181, $1.090), precios entregados por el dueño.",
-    "7. Viga del muro en 2x8 (41x185 mm), enrasada arriba con el tijeral: el soporte 2x6 (~12-13 cm de alto) queda entero",
-    "   sobre la viga y sobra espacio abajo para los pernos 3/8\" (alternados, entre soportes). Cortar la punta del tijeral a plomo.",
+    "7. Medidas reales: tijeral 2x6½\" a 2,63 m en el muro, tabla 1x10 apernada, pendiente 12 %, muro exterior 2,33 m.",
+    "   Punta del tijeral: corte a plomo (correr 2 cm) + rebaje de asiento de 5 mm (ver lámina 10).",
     "8. La bodega NO lleva tabique contra el muro de la casa: se usa el muro existente.",
     "   El H3 viene izquierdo o derecho: pedir la mitad de cada uno (uno por lado en cada tijeral).",
     "9. Canaleta y accesorios: comprar todo de la MISMA marca/sistema (DVP o Hoffens) para que calcen.",

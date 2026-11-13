@@ -25,11 +25,11 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 
 - Forma: piso y techo RECTANGULARES (8,25 x 2,50; techo 8,25 x 2,90), esquinas a 90°, sin ochavo.
   Destaje de 0,40 x 0,40 (1 módulo de tabique) en la esquina exterior de la BODEGA (lado derecho); terraza rectangular completa (falta definir el piso nuevo ~2,4 m²).
-- Tijerales pino IPV 2x6 cada 60 cm (15, todos iguales de 2,87 m), alero de 40 cm, pendiente ≈ 10 %.
+- Tijerales pino IPV 2x6½" cada 60 cm (15, todos iguales de 2,87 m), alero de 40 cm, pendiente 12 %.
   (Se evaluó 2x4½": queda al límite de la norma; se mantiene 2x6.)
-- Junto a la casa: tijeral de tope contra viga 2x8 apernada al muro, con soporte Simpson 2x6 ZMAX.
+- Junto a la casa: tijeral de tope contra tabla 1x10 apernada al muro, con soporte Simpson 2x6 ZMAX.
 - Por fuera: soportes Simpson H3, uno por lado de cada tijeral.
-- Muro exterior de la bodega: 2,36 m bajo el tijeral.
+- Muro exterior de la bodega: 2,33 m bajo el tijeral (pendiente 12 %).
 - Bodega con tabique 2x3 IPV c/40 cm en 3 lados (no lleva tabique contra la casa) y puerta 80x200 hacia la terraza.
 - Revestimiento: SmartPanel por fuera, contrachapado ranurado por dentro.
 - Cubierta trapezoidal: translúcida en la terraza e intercalada (translúcida/opaca) en la bodega.
@@ -39,7 +39,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 - Ventanas: V1 150x30 en el muro lateral (opuesto a la puerta) y V2 200x30 en el muro frente a la casa,
   borde superior ~2,0 m, con pies derechos enteros, jambas, dintel (2x6 / 2x8), antepecho doble y muñecos.
 - MEDIDAS REALES (lámina 10): tijeral 2x6½" con su cara inferior a 2,63 m en el muro, tabla 1x10 apernada,
-  pendiente 12 % → tabique opuesto 2,33 m bajo el tijeral. Las láminas 1-9 aún usan los valores anteriores.
+  pendiente 12 % → tabique opuesto 2,33 m bajo el tijeral. Todas las láminas usan estas medidas.
 - Todo con tornillos, sin clavos.
 
 ## Pendiente

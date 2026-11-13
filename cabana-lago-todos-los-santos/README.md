@@ -6,7 +6,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 
 | Archivo | Qué es |
 |---|---|
-| `ampliacion_cabana.pdf` | Planos completos en A3 (9 láminas) |
+| `ampliacion_cabana.pdf` | Planos completos en A3 (10 láminas) |
 | `materiales_ampliacion_cabana.xlsx` | Lista de materiales valorizada (Sodimac / Easy / Imperial) |
 | `1_planta.png` | Lámina 1: planta, tijerales y planchas |
 | `2_isometrico.png` | Lámina 2: isométrico |
@@ -17,6 +17,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 | `7_fachada_lateral.png` | Lámina 7: fachada lateral de la bodega terminada |
 | `8_fachada_principal.png` | Lámina 8: fachada principal (bodega con V2 + terraza) |
 | `9_tijerales.png` | Lámina 9: detalle de tijerales, cortes y tabla de corte |
+| `10_pendiente_corte.png` | Lámina 10: medidas reales, pendiente 12 % y corte del tijeral en el muro |
 | `generar_planos.py` | Programa que dibuja las láminas y el PDF |
 | `generar_planilla.py` | Programa que arma la planilla Excel |
 
@@ -37,6 +38,8 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 - Alero de 40 cm; la plancha vuela 8 cm y llega a más de la mitad de la canaleta.
 - Ventanas: V1 150x30 en el muro lateral (opuesto a la puerta) y V2 200x30 en el muro frente a la casa,
   borde superior ~2,0 m, con pies derechos enteros, jambas, dintel (2x6 / 2x8), antepecho doble y muñecos.
+- MEDIDAS REALES (lámina 10): tijeral 2x6½" con su cara inferior a 2,63 m en el muro, tabla 1x10 apernada,
+  pendiente 12 % → tabique opuesto 2,33 m bajo el tijeral. Las láminas 1-9 aún usan los valores anteriores.
 - Todo con tornillos, sin clavos.
 
 ## Pendiente

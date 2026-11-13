@@ -1125,6 +1125,118 @@ def tabla_corte(ax):
                  fontsize=9.5, weight="bold")
 
 
+# ---------------- Lámina 10: MEDIDAS REALES · pendiente y corte del tijeral ----------------
+R_H0 = 2.63      # parte de abajo del tijeral en el muro de la cabaña (medido)
+R_TAB = 0.23     # tabla 1x10 cepillada 4 caras (alto)
+R_TE = 0.019     # espesor tabla 1x10
+R_ALERO_EX = 0.17  # de la tabla al alero existente (medido)
+R_A = 2.48       # muro cabaña -> cara exterior del apoyo (medido)
+R_H = 0.165      # tijeral 2x6½"
+R_P = 0.12       # pendiente elegida
+R_ALERO = 0.40
+r_zb = lambda y: R_H0 - R_P * y                   # parte de abajo del tijeral
+r_zt = lambda y: R_H0 + R_H / math.cos(math.atan(R_P)) - R_P * y   # parte de arriba (medida a plomo)
+
+def corte_real(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    ye = R_A + R_ALERO
+    z_ex = R_H0 + R_TAB + R_ALERO_EX
+    ax.add_patch(Rectangle((-0.35, 0), 0.35, z_ex, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.plot([-0.6, 0.55], [z_ex + 0.08, z_ex - 0.04], color="#555", lw=5)
+    ax.text(-0.17, 1.4, "CABAÑA", rotation=90, ha="center", va="center", fontsize=9, weight="bold",
+            bbox=dict(fc="white", ec="none"))
+    ax.add_patch(Rectangle((0, -0.15), R_A, 0.15, fc="#a0784a", ec="k"))
+    ax.add_patch(Rectangle((0, R_H0), R_TE, R_TAB, fc="#c0392b", ec="k", zorder=4))
+    ax.add_patch(Polygon([(R_TE, r_zb(R_TE)), (ye, r_zb(ye)), (ye, r_zt(ye)), (R_TE, r_zt(R_TE))], fc=MADERA, ec="k", zorder=3))
+    for yr in [0.06 + 0.4 * k for k in range(8)]:
+        ax.add_patch(Rectangle((yr - 0.02, r_zt(yr)), 0.041, 0.041, fc="#c8a165", ec="k", zorder=4))
+    ax.plot([0, ye + 0.08], [r_zt(0) + 0.05, r_zt(ye + 0.08) + 0.05], color="#555", lw=2.5, zorder=5)
+    ax.add_patch(Rectangle((ye, r_zt(ye) + 0.041 - 0.185), 0.019, 0.185, fc="#b8860b", ec="k", zorder=5))
+    ht = r_zb(R_A)
+    ax.add_patch(Rectangle((R_A - 0.065, 0), 0.065, ht, fc="#d9e8f5", ec="#1f4e79", lw=1.5))
+    ax.add_patch(Rectangle((R_A - 0.09, ht - 0.06), 0.05, 0.14, fc="#333", ec="k", zorder=6))
+    def cv(x, za, zb, t, lado=-1):
+        ax.annotate("", (x, za), (x, zb), arrowprops=dict(arrowstyle="<->", lw=0.8))
+        ax.text(x + 0.05 * lado, (za + zb) / 2, t, ha="right" if lado < 0 else "left", va="center", fontsize=9,
+                weight="bold", bbox=dict(fc="white", ec="none", pad=0.3))
+    def ch(ya, yb, z, t):
+        ax.annotate("", (ya, z), (yb, z), arrowprops=dict(arrowstyle="<->", lw=0.8))
+        ax.text((ya + yb) / 2, z - 0.12, t, ha="center", fontsize=9, bbox=dict(fc="white", ec="none", pad=0.3))
+    cv(-0.45, 0, R_H0, "2,63", -1)
+    cv(-0.45, R_H0, R_H0 + R_TAB, "0,23", -1)
+    cv(-0.45, R_H0 + R_TAB, z_ex, "0,17", -1)
+    cv(R_A + 0.12, 0, ht, f"{ht:.2f}".replace(".", ","), 1)
+    ch(0, R_A, -0.35, "2,48"); ch(R_A, ye, -0.35, "alero 0,40")
+    ax.plot([0.5, 1.5, 1.5, 0.5], [r_zt(0.5) + 0.35, r_zt(0.5) + 0.35, r_zt(0.5) + 0.23, r_zt(0.5) + 0.35], color="#2c7fb8", lw=1.2)
+    ax.text(1.0, r_zt(0.5) + 0.38, "100", ha="center", fontsize=8, color="#2c7fb8")
+    ax.text(1.55, r_zt(0.5) + 0.27, f"12  →  pendiente 12 % ({math.degrees(math.atan(R_P)):.1f}°)", fontsize=9,
+            color="#2c7fb8", weight="bold")
+    notas = [((R_TE / 2, R_H0 + 0.18), (0.55, 3.32), "tabla 1x10 cep. 4/c\napernada al muro"),
+             ((1.2, r_zb(1.2) + 0.08), (1.4, 2.05), "tijeral 2x6½\"\nlargo 2,88 m"),
+             ((R_A - 0.065, ht - 0.03), (R_A - 0.55, 1.7), "H3 uno por lado"),
+             ((R_A - 0.03, 1.0), (R_A - 0.55, 1.0), f"TABIQUE OPUESTO\nalto {ht:.2f} m\n(bajo el tijeral)".replace(".", ","))]
+    for p, tt, tx in notas:
+        ax.annotate(tx, p, tt, fontsize=8.5, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
+                    bbox=dict(fc="white", ec="none", pad=0.5), zorder=8)
+    ax.set_xlim(-0.95, ye + 0.6); ax.set_ylim(-0.55, 3.55)
+    ax.set_title("CORTE CON MEDIDAS REALES · pendiente óptima 12 %", fontsize=11, weight="bold")
+
+def detalle_corte_real(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    # muro, tabla, soporte y punta del tijeral (escala grande)
+    ax.add_patch(Rectangle((-0.12, R_H0 - 0.12), 0.12, 0.45, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.add_patch(Rectangle((0, R_H0), R_TE, R_TAB, fc="#c0392b", ec="k"))
+    y1 = 0.30
+    seat = 0.045; dz = seat * R_P
+    zs = r_zb(R_TE)                     # nivel del asiento del soporte
+    pts = [(R_TE, r_zt(R_TE)), (y1, r_zt(y1)), (y1, r_zb(y1)), (R_TE + seat, r_zb(R_TE + seat)),
+           (R_TE + seat, zs), (R_TE, zs)]
+    ax.add_patch(Polygon(pts, fc=MADERA, ec="k", lw=1.5, zorder=3))
+    # cuña que se rebaja para que el asiento quede horizontal
+    ax.add_patch(Polygon([(R_TE, zs), (R_TE + seat, zs), (R_TE + seat, r_zb(R_TE + seat))],
+                         fc="#f8c9c4", ec="#c0392b", lw=1.5, zorder=4))
+    # soporte Simpson
+    ax.plot([R_TE + 0.002, R_TE + 0.002, R_TE + seat + 0.004, R_TE + seat + 0.004],
+            [zs + 0.13, zs - 0.003, zs - 0.003, zs + 0.05], color="#333", lw=3, zorder=6)
+    for zz in (R_H0 + 0.03, R_H0 + 0.09, R_H0 + 0.18):
+        ax.plot([-0.08, R_TE + 0.004], [zz, zz], color="k", lw=1.2, zorder=6)
+    # corte a plomo: escuadra y desplazamiento
+    off = R_H * R_P
+    ax.plot([R_TE, R_TE + off], [r_zt(R_TE), r_zt(R_TE) - off * R_P - R_H], color="#2c7fb8", lw=1, ls=":")
+    ax.annotate("", (R_TE, r_zt(R_TE) + 0.03), (R_TE + off, r_zt(R_TE) + 0.03), arrowprops=dict(arrowstyle="<->", lw=0.8))
+    ax.text(R_TE + off + 0.012, r_zt(R_TE) + 0.03, f"correr {off * 100:.1f} cm", ha="left", va="center", fontsize=8.5,
+            color="#2c7fb8", weight="bold", bbox=dict(fc="white", ec="none", pad=0.3))
+    notas = [((R_TE, r_zt(R_TE) - 0.06), (-0.10, R_H0 + 0.40), "1 · CORTE A PLOMO\n(vertical, de tope\ncontra la tabla)"),
+             ((R_TE + seat / 2, R_H0 + 0.002), (0.20, R_H0 - 0.12), f"2 · ASIENTO: rebajar una cuña de\n{dz * 1000:.0f} mm en 4,5 cm (rojo) para que\nla punta apoye plana en el soporte"),
+             ((R_TE + seat + 0.004, R_H0 + 0.03), (0.30, R_H0 + 0.05), "soporte Simpson\n2x6 ZMAX"),
+             ((-0.05, R_H0 + 0.09), (-0.10, R_H0 - 0.08), "tornillos largos: atravesar\nla tabla y anclar\nen la estructura del muro"),
+             ((R_TE / 2, R_H0 + 0.21), (0.12, R_H0 + 0.42), "tabla 1x10 (23 cm)")]
+    for p, tt, tx in notas:
+        ax.annotate(tx, p, tt, fontsize=8, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
+                    bbox=dict(fc="white", ec="none", pad=0.5), zorder=8)
+    ax.set_xlim(-0.2, 0.42); ax.set_ylim(R_H0 - 0.2, R_H0 + 0.48)
+    ax.set_title("DETALLE · corte del tijeral que atraca en el muro", fontsize=11, weight="bold")
+
+def tabla_pendientes(ax):
+    ax.axis("off")
+    filas = []
+    for p in (0.08, 0.10, 0.12, 0.13, 0.15):
+        ht = R_H0 - p * R_A
+        ok = ht - 0.082 >= 2.03 + 0.185
+        filas.append([f"{p * 100:.0f} %", f"{math.degrees(math.atan(p)):.1f}°", f"{ht:.2f}", f"{ht - p * R_ALERO:.2f}",
+                      "sí" if ok else "NO", "ELEGIDA" if abs(p - R_P) < 1e-9 else ("poca caída" if p < 0.10 else "")])
+    t = ax.table(cellText=filas, colLabels=["Pendiente", "Ángulo", "Tabique opuesto (m)", "Borde alero (m)",
+                                            "Cabe ventana V2 + dintel", "Comentario"], loc="upper center", cellLoc="center")
+    t.auto_set_font_size(False); t.set_fontsize(8.5); t.scale(1, 1.3)
+    for k in range(6):
+        t[3, k].set_facecolor("#d4edda")
+    ax.text(0, 0.18, ("Pendiente óptima 12 %: es más que el 10 % mínimo recomendado para plancha trapezoidal y policarbonato\n"
+                      "en zona lluviosa, y todavía deja el tabique opuesto en 2,33 m, suficiente para la puerta (2,05) y\n"
+                      "para la ventana V2 con su dintel 2x8 (2,03 + 0,185 = 2,22 m + solera doble). Con 15 % ya no cabe."),
+            fontsize=8.5, va="top", transform=ax.transAxes)
+    ax.set_title("COMPARACIÓN DE PENDIENTES (parte de abajo del tijeral en el muro = 2,63 m)", fontsize=10, weight="bold")
+
+
 def titulo(fig, sub):
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16,
              weight="bold")
@@ -1330,3 +1442,10 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
     tijerales_tipo_b(fig.add_axes([0.02, 0.03, 0.46, 0.44]))
     tabla_corte(fig.add_axes([0.50, 0.03, 0.48, 0.44]))
     pdf.savefig(fig); fig.savefig(OUT + "9_tijerales.png", dpi=110); plt.close(fig)
+
+    fig = plt.figure(figsize=(16.5, 11.7))
+    titulo(fig, "Lámina 10: MEDIDAS REALES · PENDIENTE Y CORTE DEL TIJERAL")
+    corte_real(fig.add_axes([0.02, 0.36, 0.55, 0.52]))
+    detalle_corte_real(fig.add_axes([0.58, 0.36, 0.41, 0.52]))
+    tabla_pendientes(fig.add_axes([0.05, 0.03, 0.90, 0.30]))
+    pdf.savefig(fig); fig.savefig(OUT + "10_pendiente_corte.png", dpi=110); plt.close(fig)

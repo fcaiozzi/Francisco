@@ -205,13 +205,13 @@ def planta(ax):
         ax.text(x, ye + 0.08, name, ha="center", va="top", fontsize=8,
                 color="#8b4513", weight="bold")
     ax.plot([0, L], [-0.04, -0.04], color="#c0392b", lw=3.5, zorder=5)
-    ax.text(L - 0.05, -0.12, "2x8 apernado al muro + soporte Simpson (tijerales de tope)", ha="left", fontsize=7.5, color="#c0392b", zorder=6, bbox=dict(fc="#e6e6e6", ec="none", pad=1))
+    ax.text(L - 0.05, -0.12, "2x8 apernado al muro + soporte Simpson (tijerales de tope)", ha="right", fontsize=7.5, color="#c0392b", zorder=6, bbox=dict(fc="#e6e6e6", ec="none", pad=1))
     vx, vy = zip(*VIGA_T)
     ax.plot(vx, vy, color="#555", lw=3, ls="--", zorder=5)
     cx = [0, DIAG_X, L]; cy = [borde_techo(x) + 0.07 for x in cx]
     ax.plot(cx, cy, color="#7b4a1e", lw=3, zorder=5)
     ax.add_patch(Circle((L + 0.05, cy[-1]), 0.07, fc="#7b4a1e", ec="k", zorder=6))
-    ax.text(L - 0.1, cy[-1] + 0.2, "canaleta PVC café → bajada Ø80", fontsize=7.5, color="#7b4a1e", ha="left")
+    ax.text(L - 0.1, cy[-1] + 0.2, "canaleta PVC café → bajada Ø80", fontsize=7.5, color="#7b4a1e", ha="right")
     for px, py in PILARES:
         ax.add_patch(Rectangle((px - 0.045, py - 0.045), 0.09, 0.09, fc="k", zorder=5))
     V1, V2 = VENTANAS
@@ -228,7 +228,7 @@ def planta(ax):
             ax.plot([x1 + dx, x2 + dx], [y1 + dy, y2 + dy], color="#2c7fb8", lw=1.2, zorder=5)
         if v["muro"] == "der":
             ax.text(L + 0.12, v["a"] + 0.25, f'{v["n"]} {v["med"]}\nvano a 1,71–2,03 m', fontsize=7.5,
-                    color="#2c7fb8", va="center", ha="right", weight="bold")
+                    color="#2c7fb8", va="center", weight="bold")
         else:
             ax.text((v["a"] + v["b"]) / 2, D - 0.12, f'{v["n"]} {v["med"]} · vano a 1,71–2,03 m', fontsize=7.5,
                     color="#2c7fb8", ha="center", weight="bold")
@@ -238,7 +238,7 @@ def planta(ax):
     ax.add_patch(Arc((XB, PUERTA[0] + 0.04), 1.6, 1.6, theta1=0, theta2=90,
                      ls=":", lw=1, zorder=6))
     ax.text(XB - 0.12, (PUERTA[0] + PUERTA[1]) / 2, "PUERTA 80x200\n(vano 88)\nhacia terraza",
-            fontsize=7.5, va="center", ha="left", zorder=7)
+            fontsize=7.5, va="center", ha="right", zorder=7)
     ax.text((XB + L) / 2 + 0.25, 1.95, "BODEGA\n3,50 x 2,50 m\n(tabique 2x3 en 3 lados)", ha="center", va="center",
             fontsize=12, weight="bold", color="#1f4e79")
     ax.text(2.6, 0.55, "TERRAZA TECHADA\n4,75 m", ha="center", va="center",
@@ -277,7 +277,6 @@ def planta(ax):
     ax.set_xlim(-1.4, L + 1.0)
     ax.set_ylim(-1.9, 4.1)
     ax.invert_yaxis()
-    ax.invert_xaxis()   # la bodega queda a la izquierda, donde estaba la diagonal
 
 
 def leyenda_y_tabla(fig):
@@ -306,7 +305,7 @@ def leyenda_y_tabla(fig):
     t = ax.table(cellText=filas, colLabels=["Tijeral", "Posición (m)", "Largo (m)", "Nota"],
                  loc="center", cellLoc="center")
     t.auto_set_font_size(False); t.set_fontsize(7); t.scale(1, 0.9)
-    ax.set_title("Tijerales (posición medida desde el extremo de la terraza)", fontsize=9)
+    ax.set_title("Tijerales (largo inclinado, incluye alero)", fontsize=9)
 
     ax = fig.add_axes([0.69, 0.03, 0.29, 0.25]); ax.axis("off")
     filas = [[f"P{k + 1}", f"{x0:.1f} – {x1:.2f}", "Translúcida" if t == "T" else "OPACA",
@@ -398,7 +397,7 @@ def iso(ax, azim, elev=30):
     ax.text(3.0, -1.0, 3.3, "CASA EXISTENTE", color="#3d5361", fontsize=9)
     ax.set_xlim(-0.3, 8.55); ax.set_ylim(-1.6, 3.4); ax.set_zlim(-0.2, 3.2)
     ax.set_box_aspect((8.85, 5.0, 3.4), zoom=1.0)
-    pass                # orientación igual a la planta (bodega a la izquierda)
+    ax.invert_yaxis()   # mismo sentido que la planta (no espejado)
 
 
 # ---------------- Lámina 3: CORTES ----------------
@@ -561,7 +560,7 @@ def corte_longitudinal(ax):
     _cota(ax, (0, -0.65), (XB, -0.65), "4,75 terraza (tijerales c/0,59)")
     _cota(ax, (XB, -0.65), (L, -0.65), "3,50 bodega (tijerales c/0,58)")
     _cota(ax, (L + 0.4, 0), (L + 0.4, zw), f"{zw:.2f}", off=(0.13, 0), rot=90)
-    ax.set_xlim(-0.6, L + 0.8); ax.set_ylim(-0.95, 3.3); ax.invert_xaxis()
+    ax.set_xlim(-0.6, L + 0.8); ax.set_ylim(-0.95, 3.3)
     ax.set_title(f"CORTE LONGITUDINAL B-B (a {Y_CL:.2f} m del muro, mirando hacia la casa)",
                  fontsize=11, weight="bold")
 
@@ -660,7 +659,7 @@ def llave_hojalateria(ax):
     ax.text(L + 0.12, 1.4, "REMATE LATERAL\n2,9 m · DETALLE 4", fontsize=8, color="#2c7fb8", weight="bold", va="center")
     ax.text(-0.12, 0.75, "REMATE LATERAL\n2,9 m · DETALLE 4", fontsize=8, color="#2c7fb8", weight="bold", va="center", ha="right")
     ax.text(5.6, borde_techo(L) + 0.35, "canaleta PVC café (borde bajo)", fontsize=8, color="#7b4a1e", ha="center")
-    ax.set_xlim(-1.6, L + 1.6); ax.set_ylim(-0.7, 3.8); ax.invert_yaxis(); ax.invert_xaxis()
+    ax.set_xlim(-1.6, L + 1.6); ax.set_ylim(-0.7, 3.8); ax.invert_yaxis()
     ax.set_title("UBICACIÓN DE LA HOJALATERÍA (planta de techo)", fontsize=10, weight="bold")
 
 
@@ -1099,9 +1098,9 @@ def tijerales_tipo_b(ax):
     ax.text(XN + NW / 2, D + 0.15, "destaje", ha="center", fontsize=7.5, color="#6b4f1d")
     ax.text(XB / 2 + 0.3, 1.0, "TERRAZA", ha="center", fontsize=10, weight="bold", color="#6b4f1d")
     ax.text((XB + L) / 2, 1.0, "BODEGA", ha="center", fontsize=10, weight="bold", color="#1f4e79")
-    ax.text(L - 0.1, D + ALERO + 0.55, "rojo: viga 2x8 + soporte Simpson · gris: viga 2x6 doble / muro bodega · ■ pilar 4x4",
+    ax.text(0.1, D + ALERO + 0.55, "rojo: viga 2x8 + soporte Simpson · gris: viga 2x6 doble / muro bodega · ■ pilar 4x4",
             fontsize=7.5)
-    ax.set_xlim(-0.4, L + 0.3); ax.set_ylim(-0.45, D + ALERO + 0.75); ax.invert_yaxis(); ax.invert_xaxis()
+    ax.set_xlim(-0.4, L + 0.3); ax.set_ylim(-0.45, D + ALERO + 0.75); ax.invert_yaxis()
     ax.set_title("PLANTA DE TIJERALES Y APOYOS · techo rectangular, 15 tijerales iguales", fontsize=10, weight="bold")
 
 def tabla_corte(ax):
@@ -1145,7 +1144,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
     fig = plt.figure(figsize=(16.5, 11.7))
     titulo(fig, "Lámina 2: ISOMÉTRICO (vista desde afuera, casa existente atrás en gris)")
     a1 = fig.add_axes([0.02, 0.06, 0.96, 0.84], projection="3d")
-    iso(a1, azim=60)
+    iso(a1, azim=-120)
     fig.text(0.04, 0.04, "Tijerales 2x6 c/60 cm · alero 40 cm · cubierta trapezoidal translúcida en terraza e intercalada en bodega · pendiente ≈ 10 % · "
              "viga 2x8 apernada al muro (rojo) · canaleta PVC café",
              fontsize=9, color="#444")
@@ -1193,8 +1192,8 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
             ["Viga exterior doble (recta, 4,75 m)", "Pino IPV 2x6 x 3,20", "4", "unir sobre pilar"],
             ["Pilares", "Pino IPV 4x4 x 3,20", "2", ""],
         ]),
-        ("PISO (completar bajo la bodega)", [
-            ["Completar piso bajo la bodega (antigua diagonal)", "según piso existente", "~2,3 m²", "POR DEFINIR: falta estructura del piso"],
+        ("PISO TERRAZA (completar rectángulo)", [
+            ["Ampliación de piso (triángulo de la diagonal)", "según piso existente", "~2,4 m²", "POR DEFINIR: falta estructura del piso"],
         ]),
         ("CUBIERTA TRAPEZOIDAL", [
             ["Plancha translúcida (policarbonato)", f"largos: {largos_T}", str(nT), "mismo perfil que la opaca"],

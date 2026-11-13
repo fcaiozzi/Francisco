@@ -1240,6 +1240,102 @@ def tabla_pendientes(ax):
     ax.set_title("COMPARACIÓN DE PENDIENTES (parte de abajo del tijeral en el muro = 2,63 m)", fontsize=10, weight="bold")
 
 
+# ---------------- Lámina 11: CORTE A PLOMO PASO A PASO ----------------
+def _pieza_banco(ax, paso):
+    """Punta del tijeral acostada en el banco (sin inclinar)."""
+    ax.set_aspect("equal"); ax.axis("off")
+    h = H_T; off = h * PEND; Lp = 0.42
+    # pieza: extremo de la casa a la izquierda
+    if paso < 3:
+        poly = [(0, 0), (Lp, 0), (Lp, h), (0, h)]
+    else:
+        poly = [(off, 0), (Lp, 0), (Lp, h), (0, h)]
+    ax.add_patch(Polygon(poly, fc=MADERA, ec="k", lw=1.5))
+    if paso >= 1:   # línea a escuadra
+        ax.plot([off, off], [-0.02, h + 0.02], color="#2c7fb8", lw=1.5, ls="--")
+        if paso < 3:
+            ax.text(off + 0.008, -0.045, "1 · línea a escuadra", color="#2c7fb8", fontsize=9, weight="bold")
+    if paso == 2:   # correr 2 cm en el canto de arriba
+        ax.annotate("", (0, h + 0.03), (off, h + 0.03), arrowprops=dict(arrowstyle="<->", lw=1.2, color="#c0392b"))
+        ax.text(off / 2, h + 0.05, f"{off * 100:.1f} cm", ha="center", color="#c0392b", fontsize=10, weight="bold")
+        ax.plot([0, off], [h, 0], color="#c0392b", lw=2.5)
+        ax.text(-0.01, h + 0.095, "2 · en el canto de ARRIBA corre 2 cm hacia la punta\n    y une con el pie de la escuadra: esa es la línea de corte",
+                color="#c0392b", fontsize=8.5, va="bottom")
+    if paso < 3:
+        ax.text(Lp - 0.01, h / 2, "tijeral 2x6½\"\n(acostado en el banco)", ha="right", va="center", fontsize=8)
+    else:
+        ax.add_patch(Polygon([(0, 0), (off, 0), (0, h)], fc="#f8c9c4", ec="#c0392b", lw=1, ls="--"))
+        ax.plot([0, off], [h, 0], color="#c0392b", lw=2.5)
+        ax.annotate("este triangulito se bota", (0.006, 0.02), (0.10, -0.05), fontsize=8, color="#c0392b",
+                    arrowprops=dict(arrowstyle="-", lw=0.6, color="#c0392b"))
+        ax.text(Lp - 0.01, h / 2, "3 · cortar con la sierra\n     por la línea roja", ha="right", va="center", fontsize=8.5,
+                weight="bold")
+    ax.annotate("", (Lp + 0.03, 0), (Lp + 0.03, h), arrowprops=dict(arrowstyle="<->", lw=0.8))
+    ax.text(Lp + 0.04, h / 2, f"{h * 100:.1f} cm", va="center", fontsize=8.5)
+    ax.text(-0.04, h / 2, "lado de\nla CASA", ha="right", va="center", fontsize=8.5, weight="bold", color="#555")
+    ax.set_xlim(-0.14, Lp + 0.12); ax.set_ylim(-0.08, h + 0.17)
+
+def _pieza_colocada(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    th = math.atan(PEND); h = H_T
+    z0 = 0.0
+    # muro y tabla 1x10
+    ax.add_patch(Rectangle((-0.10, -0.12), 0.10, 0.42, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.add_patch(Rectangle((0, -0.004), TE_V, H_V, fc="#c0392b", ec="k"))
+    x0 = TE_V
+    zt_ = lambda x: z0 + h / math.cos(th) - PEND * (x - x0)
+    zb_ = lambda x: z0 - PEND * (x - x0)
+    seat = 0.045
+    pts = [(x0, zt_(x0)), (0.45, zt_(0.45)), (0.45, zb_(0.45)), (x0 + seat, zb_(x0 + seat)), (x0 + seat, z0), (x0, z0)]
+    ax.add_patch(Polygon(pts, fc=MADERA, ec="k", lw=1.5))
+    ax.add_patch(Polygon([(x0, z0), (x0 + seat, z0), (x0 + seat, zb_(x0 + seat))], fc="#f8c9c4", ec="#c0392b", lw=1.2))
+    ax.plot([x0 + 0.002, x0 + 0.002, x0 + seat + 0.004, x0 + seat + 0.004], [0.13, -0.004, -0.004, 0.05], color="#333", lw=3)
+    ax.plot([x0, x0], [-0.06, zt_(x0) + 0.06], color="#c0392b", lw=1, ls=":")
+    ax.text(x0 + 0.006, zt_(x0) + 0.07, "corte VERTICAL (a plomo):\nqueda pegado a la tabla", fontsize=8.5, color="#c0392b", weight="bold")
+    ax.plot([x0 + 0.15, 0.40, 0.40], [zt_(x0 + 0.15) + 0.03, zt_(x0 + 0.15) + 0.03, zt_(0.40) + 0.03], color="#2c7fb8", lw=1)
+    ax.text(0.41, zt_(0.40) + 0.035, f"pendiente {PEND * 100:.0f} % ({math.degrees(th):.1f}°)", fontsize=8, color="#2c7fb8")
+    notas = [((x0 + seat / 2, z0 - 0.002), (0.22, -0.08), f"4 · ASIENTO: rebajar esta cuña\n({PEND * seat * 1000:.0f} mm en {seat * 100:.1f} cm) para que apoye\nplano sobre el soporte Simpson"),
+             ((x0 + seat + 0.004, 0.03), (0.30, 0.03), "soporte Simpson 2x6"),
+             ((TE_V / 2, 0.18), (-0.06, 0.33), "tabla 1x10\napernada al muro")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=8, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
+                    bbox=dict(fc="white", ec="none", pad=0.5))
+    ax.set_xlim(-0.14, 0.62); ax.set_ylim(-0.16, 0.40)
+
+def _pieza_completa(ax):
+    ax.set_aspect("auto"); ax.axis("off")
+    Lc = tij[-1][3]; h = H_T; off = h * PEND
+    poly = [(off, 0), (Lc + off, 0), (Lc, h), (0, h)]
+    ax.add_patch(Polygon(poly, fc=MADERA, ec="k", lw=1.5))
+    ax.annotate("", (0, h + 0.05), (Lc, h + 0.05), arrowprops=dict(arrowstyle="<->", lw=0.9))
+    ax.text(Lc / 2, h + 0.07, f"canto de ARRIBA {Lc:.2f} m", ha="center", fontsize=9, weight="bold")
+    ax.annotate("", (off, -0.05), (Lc + off, -0.05), arrowprops=dict(arrowstyle="<->", lw=0.9))
+    ax.text(Lc / 2, -0.11, f"canto de ABAJO {Lc:.2f} m (corrido {off * 100:.0f} cm)", ha="center", fontsize=9)
+    ax.text(-0.03, h / 2, "punta\ncasa", ha="right", va="center", fontsize=8.5, weight="bold")
+    ax.text(Lc + off + 0.03, h / 2, "punta\nalero", ha="left", va="center", fontsize=8.5, weight="bold")
+    ax.text(Lc / 2, h / 2, "las 2 puntas se cortan a plomo y quedan PARALELAS (la pieza es un paralelogramo)",
+            ha="center", va="center", fontsize=8.5)
+    ax.set_xlim(-0.35, Lc + 0.40); ax.set_ylim(-0.18, h + 0.13)
+
+def lamina_corte_plomo(fig):
+    titulo(fig, "Lámina 11: CORTE A PLOMO DEL TIJERAL · PASO A PASO")
+    for k, (pos, tt) in enumerate([([0.02, 0.56, 0.31, 0.32], "PASO 1 · marcar la escuadra"),
+                                    ([0.35, 0.56, 0.31, 0.32], "PASO 2 · correr 2 cm arriba"),
+                                    ([0.68, 0.56, 0.31, 0.32], "PASO 3 · cortar")]):
+        ax = fig.add_axes(pos); _pieza_banco(ax, k + 1); ax.set_title(tt, fontsize=11, weight="bold")
+    ax = fig.add_axes([0.02, 0.20, 0.55, 0.34]); _pieza_colocada(ax)
+    ax.set_title("ASÍ QUEDA COLOCADO (pieza inclinada 12 %)", fontsize=11, weight="bold")
+    ax = fig.add_axes([0.60, 0.25, 0.38, 0.20]); ax.axis("off")
+    ax.text(0, 1, "POR QUÉ 2 cm", fontsize=11, weight="bold", va="top")
+    ax.text(0, 0.80, (f"El tijeral va inclinado {PEND * 100:.0f} %. Si lo cortas a escuadra (90°),\n"
+                      f"al ponerlo inclinado la punta queda torcida y no asienta contra\n"
+                      f"la tabla. Corriendo {H_T * PEND * 100:.1f} cm ({H_T * 100:.1f} cm de alto x {PEND:.2f}) la punta\n"
+                      "queda vertical y apoya completa contra la tabla del muro."),
+            fontsize=9.5, va="top", linespacing=1.5)
+    ax = fig.add_axes([0.04, 0.03, 0.92, 0.15]); _pieza_completa(ax)
+    ax.set_title("LA PIEZA COMPLETA", fontsize=10.5, weight="bold")
+
+
 def titulo(fig, sub):
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16,
              weight="bold")
@@ -1452,3 +1548,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
     detalle_corte_real(fig.add_axes([0.58, 0.36, 0.41, 0.52]))
     tabla_pendientes(fig.add_axes([0.05, 0.03, 0.90, 0.30]))
     pdf.savefig(fig); fig.savefig(OUT + "10_pendiente_corte.png", dpi=110); plt.close(fig)
+
+    fig = plt.figure(figsize=(16.5, 11.7))
+    lamina_corte_plomo(fig)
+    pdf.savefig(fig); fig.savefig(OUT + "11_corte_plomo.png", dpi=110); plt.close(fig)

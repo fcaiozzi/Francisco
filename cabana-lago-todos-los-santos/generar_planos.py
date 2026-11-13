@@ -12,16 +12,17 @@ OUT = os.path.dirname(os.path.abspath(__file__)) + "/"
 
 # x: a lo largo del muro de la casa (0 = extremo izquierdo); y: hacia afuera de la casa
 L, D = 8.25, 2.5
-NW, NH = round(L - 3.5, 2) / 8, 0.35   # destaje en la esquina exterior de la terraza (ancho, fondo)
-DIAG_X = NW                       # (compatibilidad) fin del destaje
+NW, NH = 0.35, 0.35               # destaje en la esquina exterior de la BODEGA (ancho, fondo)
+XN = L - NW                       # inicio del destaje (7,90)
+DIAG_X = 0.0                      # (compatibilidad) ya no hay diagonal
 Y0 = D - NH                       # fondo del piso en el destaje (2,15 m)
 ALERO = 0.40
 BOD = 3.5
 XB = L - BOD                      # inicio bodega (4.75): bodega a la DERECHA
-piso = [(0, 0), (L, 0), (L, D), (NW, D), (NW, Y0), (0, Y0)]
+piso = [(0, 0), (L, 0), (L, Y0), (XN, Y0), (XN, D), (0, D)]
 
 def prof(x):
-    return Y0 if x < NW - 1e-6 else D
+    return Y0 if x > XN + 1e-6 else D
 
 def borde_techo(x):
     return D + ALERO                  # techo rectangular
@@ -57,13 +58,13 @@ N_PERNOS = math.ceil(L / 0.60) + 1
 print("filas costaneras", FILAS, "metros", round(M_COST, 1), "piezas", N_COST, "pernos", N_PERNOS)
 SEP = 0.40   # 2x3 -> pies derechos cada 40 cm
 # perímetro completo de la bodega (incluye el muro contra la casa)
-MUROS = [((L, 0), (L, D)), ((L, D), (XB, D)), ((XB, D), (XB, 0))]
+MUROS = [((L, 0), (L, Y0)), ((L, Y0), (XN, Y0)), ((XN, Y0), (XN, D)), ((XN, D), (XB, D)), ((XB, D), (XB, 0))]
 
 # ---------------- Ventanas ----------------
 VEN_ALTO = (1.71, 2.03)        # vano bruto: antepecho -> dintel (ventana 30 cm, borde superior ~2,0 m)
 VENTANAS = [
-    dict(n="V1", muro="der", a=D / 2 - 0.76, b=D / 2 + 0.76, med="150 x 30", dintel="2x6", hd=0.138),
-    dict(n="V2", muro="frente", a=(XB + L) / 2 - 1.01, b=(XB + L) / 2 + 1.01,
+    dict(n="V1", muro="der", a=Y0 / 2 - 0.76, b=Y0 / 2 + 0.76, med="150 x 30", dintel="2x6", hd=0.138),
+    dict(n="V2", muro="frente", a=(XB + XN) / 2 - 1.01, b=(XB + XN) / 2 + 1.01,
          med="200 x 30", dintel="2x8", hd=0.185),
 ]
 def _pt(v, s):
@@ -106,10 +107,10 @@ def pies_derechos():
             (XB, PUERTA[1] + 0.045), (XB, PUERTA[1] + 0.09)]
     # refuerzo: doble pie derecho bajo cada tijeral que apoya en el muro exterior
     for x in xs_bod:
-        if x < L - 0.01 and not en_vano((round(x, 3), D)):
+        if x < XN - 0.01 and not en_vano((round(x, 3), D)):
             pts.append((round(x, 3), D))
     # refuerzo de esquinas
-    pts += [(L, D), (XB, D)]
+    pts += [(L, Y0), (XN, Y0), (XN, D), (XB, D)]
     return pts
 PD = pies_derechos()
 N_PD = len(PD)
@@ -123,8 +124,8 @@ N_SOL = math.ceil(((PERIM - 0.88) + 2 * PERIM) / 3.2 * 1.10)
 N_CAD = math.ceil(2 * PERIM / 3.2 * 1.10)
 print("pies derechos", N_PD, "-> compra", N_PD_COMPRA, "perim", round(PERIM, 2),
       "soleras", N_SOL, "cadenetas", N_CAD)
-PILARES = [(0, Y0), (NW, D), ((NW + XB) / 2, D)]
-VIGA_T = [(0, Y0), (NW, Y0), (NW, D), (XB, D)]   # viga exterior terraza (recta, con destaje)
+PILARES = [(0, D), (XB / 2, D)]
+VIGA_T = [(0, D), (XB, D)]        # viga exterior terraza (recta)
 SEGS = [list(m) for m in MUROS]
 
 # ---------------- Tornillos (sin clavos) ----------------
@@ -158,9 +159,9 @@ USOS_TORN = [
     ("Bloqueos entre tijerales (muro bodega)", "B", 6, 4),
     ("Soporte viga 2x6 Simpson (colgador en muro casa)", "C", len(tij), 8),
     ("Soporte sismo y viento H3 (2 por tijeral)", "C", 2 * len(tij), 8),
-    ("Escuadras base de pilares", "C", 6, 6),
+    ("Escuadras base de pilares", "C", 4, 6),
     ("2x4 de apoyo apernado al muro c/60 cm", "D", N_PERNOS, 1),
-    ("Viga terraza a pilares", "B", 3, 2),
+    ("Viga terraza a pilares", "B", 2, 2),
     ("Planchas a costaneras (~4 por plancha y costanera)", "F", _filas_plancha, 4),
     ("Costura de traslapos laterales c/50 cm", "G", 8, 7),
     ("SmartPanel a pies derechos (c/15 bordes, c/30 centro)", "H", 11, 40),
@@ -197,7 +198,7 @@ def planta(ax):
     ax.add_patch(Polygon(techo, closed=True, fc="#fff6d8", ec="#b8860b",
                          lw=1.4, ls="-.", zorder=0))
     ax.add_patch(Polygon(piso, closed=True, fc="#f3e3c7", ec="k", lw=2, zorder=1))
-    bod = [(XB, 0), (L, 0), (L, D), (XB, D)]
+    bod = [(XB, 0), (L, 0), (L, Y0), (XN, Y0), (XN, D), (XB, D)]
     ax.add_patch(Polygon(bod, closed=True, fc="#d9e8f5", ec="none", zorder=1))
     for name, x, ye, lg in tij:
         ax.plot([x, x], [0, ye], color="#8b4513", lw=2.2, zorder=3)
@@ -214,8 +215,8 @@ def planta(ax):
     for px, py in PILARES:
         ax.add_patch(Rectangle((px - 0.045, py - 0.045), 0.09, 0.09, fc="k", zorder=5))
     V1, V2 = VENTANAS
-    segs = [[(L, 0), (L, V1["a"])], [(L, V1["b"]), (L, D)],
-            [(L, D), (V2["b"], D)], [(V2["a"], D), (XB, D)],
+    segs = [[(L, 0), (L, V1["a"])], [(L, V1["b"]), (L, Y0)], [(L, Y0), (XN, Y0)], [(XN, Y0), (XN, D)],
+            [(XN, D), (V2["b"], D)], [(V2["a"], D), (XB, D)],
             [(XB, D), (XB, PUERTA[1])], [(XB, PUERTA[0]), (XB, 0)]]
     for (x1, y1), (x2, y2) in segs:
         ax.plot([x1, x2], [y1, y2], color="#1f4e79", lw=4, solid_capstyle="butt",
@@ -257,10 +258,10 @@ def planta(ax):
     cota_h(0, L, -1.15, "8,25 m")
     cota_h(0, XB, -1.55, "TERRAZA 4,75 m")
     cota_h(XB, L, -1.55, "BODEGA 3,50 m")
-    cota_h(0, NW, 3.75, f"{NW:.2f}".replace(".", ","))
-    cota_h(NW, L, 3.75, f"{L - NW:.2f}".replace(".", ","))
-    cota_v(-0.55, 0, Y0, f"{Y0:.2f}".replace(".", ","))
-    ax.text(NW / 2 + 0.05, Y0 - 0.35, f"destaje\n{NW:.2f} x {NH:.2f}".replace(".", ","), ha="center", fontsize=7.5,
+    cota_h(0, XN, 3.75, f"{XN:.2f}".replace(".", ","))
+    cota_h(XN, L, 3.75, f"{NW:.2f}".replace(".", ","))
+    cota_v(L + 0.45, Y0, D, f"{NH:.2f}".replace(".", ","))
+    ax.text(L + 0.25, D + 0.2, f"destaje\n{NW:.2f} x {NH:.2f}".replace(".", ","), ha="center", fontsize=7.5,
             color="#6b4f1d", zorder=7)
     cota_v(-0.95, 0, D, "2,50 m")
     for x1, x2 in zip(xs_ter[:-1], xs_ter[1:]):
@@ -535,7 +536,7 @@ def corte_longitudinal(ax):
     x0 = 0.0
     ax.add_patch(Rectangle((x0, -0.15), L - x0, 0.15, fc="#a0784a", ec="k"))
     # pilar al fondo (esquina izquierda)
-    ax.add_patch(Rectangle((0, -0.15), 0.09, zt(Y0) - H_T + 0.15, fc="#555", ec="k"))
+    ax.add_patch(Rectangle((0, -0.15), 0.09, zt(D) - H_T + 0.15, fc="#555", ec="k"))
     ax.text(0.05, -0.35, "pilar 4x4", ha="center", fontsize=7.5)
     # tabique bodega del lado casa (al fondo): pies derechos
     for x, y in PD:
@@ -668,12 +669,12 @@ AZUL = "#9dbbd9"; AZUL_OSC = "#1f4e79"
 def elevacion(ax, v):
     ax.set_aspect("equal"); ax.axis("off")
     if v["muro"] == "der":
-        s0, s1 = 0.0, D
+        s0, s1 = 0.0, Y0
         tope = lambda s: tope_pd("der", s)
         titulo_e = "ELEVACIÓN MURO LATERAL (2,5 m) · ventana V1 150 x 30 — vista desde afuera"
         tijs = [(s0, s1)]
     else:
-        s0, s1 = XB, L
+        s0, s1 = XB, XN
         tope = lambda s: tope_pd("frente", s)
         titulo_e = "ELEVACIÓN MURO FRENTE A LA CASA · ventana V2 200 x 30 — vista desde afuera"
         tijs = None
@@ -681,7 +682,7 @@ def elevacion(ax, v):
     a, b, hd = v["a"], v["b"], v["hd"]
     pd = sorted({(p[1] if v["muro"] == "der" else p[0]) for p in PD
                  if (v["muro"] == "der" and abs(p[0] - L) < 1e-6)
-                 or (v["muro"] == "frente" and abs(p[1] - D) < 1e-6 and XB - 1e-6 <= p[0] <= L + 1e-6)})
+                 or (v["muro"] == "frente" and abs(p[1] - D) < 1e-6 and XB - 1e-6 <= p[0] <= XN + 1e-6)})
     def poly_top(sa, sb, dz=0.0):
         return [(sa, tope(sa) + dz), (sb, tope(sb) + dz)]
     # solera inferior y superior doble
@@ -838,9 +839,11 @@ def fachada_lateral(ax):
         while y < yb - 0.01:
             ax.plot([y, y], [-0.20, wtop(y)], color="#c9b79c", lw=0.5, zorder=2)
             y += 0.08
-    panel(0.0, D, "#e9dcc6")
+    panel(0.0, Y0, "#e9dcc6")
+    panel(Y0, D, "#d8c8ad")
+    ax.text((Y0 + D) / 2, 0.9, "destaje\n(atrás)", ha="center", fontsize=7, color="#5a4a30")
     # esquineros
-    for y in (0.0, D - 0.07):
+    for y in (0.0, Y0 - 0.035, D - 0.07):
         ax.add_patch(Rectangle((y, -0.20), 0.07, wtop(y) + 0.20, fc="#b8956a", ec="k", lw=0.6, zorder=3))
     # junta horizontal (franja superior con cortagotera)
     ax.plot([0.07, D - 0.07], [2.44 - 0.20, 2.44 - 0.20], color="#666", lw=1.2, ls=(0, (6, 2)), zorder=3)
@@ -881,14 +884,14 @@ def fachada_lateral(ax):
     cv(0.25, 0, wtop(0), f"{wtop(0):.2f}")
     cv(a - 0.12, 0, z0, f"{z0:.2f}", side=-1)
     cv(b + 0.12, 0, z1, f"{z1:.2f}")
-    ch(0, a, 0.75, f"{a:.2f}"); ch(a, b, 0.75, f"{b - a:.2f}"); ch(b, D, 0.75, f"{D - b:.2f}")
+    ch(0, a, 0.75, f"{a:.2f}"); ch(a, b, 0.75, f"{b - a:.2f}"); ch(b, Y0, 0.75, f"{Y0 - b:.2f}")
     ch(0, D, -0.95, "2,50 (bodega)"); ch(D, ye, -0.95, f"alero {ye - D:.2f}")
     # rótulos
     notas = [(((a + b) / 2, z1 + 0.01), ((a + b) / 2, 2.85), "botaguas zincalum"),
              (((a + b) / 2, (z0 + z1) / 2), (1.0, 1.35), "V1 ventana aluminio 150 x 30"),
              ((1.6, zt(1.6) - 0.05), (1.75, 3.10), "remate lateral zincalum (DET. 4)"),
              ((0.6, 0.5), (0.9, 0.35), "SmartPanel (ranurado c/8 cm), pintado"),
-             ((D - 0.035, 1.2), (2.05, 0.45), "esquinero"),
+             ((Y0, 1.2), (1.75, 0.45), "esquinero"),
              ((yb_, 1.4), (ye + 0.5, 1.6), "bajada PVC café Ø80\ncon abrazaderas"),
              ((yb_, zr - 0.04), (ye + 0.55, 2.75), "canaleta PVC café\n(tapa lateral)"),
              ((ye + 0.01, zt(ye) - 0.07), (ye + 0.40, 2.30), "tapacán 1x8"),
@@ -913,13 +916,13 @@ def fachada_frente(ax):
     ax.text(2.4, 2.7, "muro casa existente (al fondo)", ha="center", fontsize=8, color="#777", zorder=1)
     # piso y pilotes
     ax.add_patch(Rectangle((0, -0.20), L, 0.20, fc="#a0784a", ec="k", zorder=2))
-    for xp in (0.15, NW, (NW + XB) / 2, XB + 0.15, L - 0.5):
+    for xp in (0.15, XB / 2, XB + 0.15, L - 0.5):
         ax.add_patch(Rectangle((xp - 0.06, -0.75), 0.12, 0.55, fc="#8d6e4a", ec="k", zorder=1))
     ax.plot([-0.5, L + 0.6], [-0.75, -0.75], color="#6b8e23", lw=1.5, ls="--")
     # terraza: pilares y viga sobre la diagonal
     for px, py in PILARES:
         ax.add_patch(Rectangle((px - 0.045, 0), 0.09, wtop(py) - 0.138, fc="#6d5a45", ec="k", zorder=3))
-    vx = [0, NW, NW, XB]; vy = [Y0, Y0, D, D]
+    vx = [0, XB]; vy = [D, D]
     top = [wtop(y) for y in vy]
     ax.add_patch(Polygon(list(zip(vx, top)) + list(zip(vx[::-1], [t - 0.138 for t in top[::-1]])),
                          fc="#c9a46a", ec="k", zorder=3))
@@ -933,8 +936,9 @@ def fachada_frente(ax):
             t = (x - xa) / (xb - xa)
             ax.plot([x, x], [-0.20, wtop(ya + (yb - ya) * t)], color="#c9b79c", lw=0.5, zorder=4)
             x += 0.08
-    panel(XB, L, D, D, "#e9dcc6")
-    for x in (XB, L - 0.07):
+    panel(XB, XN, D, D, "#e9dcc6")
+    panel(XN, L, Y0, Y0, "#d8c8ad")
+    for x in (XB, XN - 0.035, L - 0.07):
         ax.add_patch(Rectangle((x, -0.20), 0.07, 2.56, fc="#b8956a", ec="k", lw=0.6, zorder=5))
     ax.plot([XB + 0.07, L - 0.07], [2.24] * 2, color="#666", lw=1.2, ls=(0, (6, 2)), zorder=5)
     # ventana V2
@@ -972,7 +976,7 @@ def fachada_frente(ax):
         ax.text(x - 0.05, (za + zb_) / 2, t, va="center", fontsize=8, rotation=90, zorder=11,
                 bbox=dict(fc="white", ec="none", pad=0.3))
     ch(0, L, -1.15, "8,25"); ch(0, XB, -0.95, "terraza 4,75"); ch(XB, L, -0.95, "bodega 3,50")
-    ch(XB, a, 0.55, f"{a - XB:.2f}"); ch(a, b, 0.55, f"V2 {b - a:.2f}"); ch(b, L, 0.55, f"{L - b:.2f}")
+    ch(XB, a, 0.55, f"{a - XB:.2f}"); ch(a, b, 0.55, f"V2 {b - a:.2f}"); ch(b, XN, 0.55, f"{XN - b:.2f}")
     cv(XB - 0.15, 0, wtop(D), f"{wtop(D):.2f}")
     cv(a - 0.12, 0, z0, f"{z0:.2f}"); cv(b + 0.15, 0, z1, f"{z1:.2f}")
     notas = [(((a + b) / 2, (z0 + z1) / 2), ((a + b) / 2, 1.35), "V2 ventana aluminio 200 x 30"),
@@ -981,8 +985,8 @@ def fachada_frente(ax):
              ((L, 1.5), (L + 0.45, 1.0), "bajada PVC café Ø80"),
              ((6.0, zc[29] - 0.03), (6.0, 3.10), "canaleta PVC café"),
              ((2.6, ze[13] - 0.05), (2.6, 3.10), "tapacán 1x8"),
-             ((PILARES[2][0], 1.2), (PILARES[2][0] - 0.6, 1.5), "pilar 4x4"),
-             ((2.4, top[3] - 0.07), (2.9, 1.75), "viga 2x6 doble"),
+             ((PILARES[1][0], 1.2), (PILARES[1][0] - 0.6, 1.5), "pilar 4x4"),
+             ((1.2, top[1] - 0.07), (1.6, 1.75), "viga 2x6 doble"),
              ((0, ze[0]), (-0.35, 3.10), "remate lateral")]
     for p, t, tx in notas:
         ax.annotate(tx, p, t, fontsize=7.5, ha="center", va="center", zorder=10,
@@ -995,7 +999,7 @@ def fachada_frente(ax):
 
 # ---------------- Lámina 9: DETALLE DE TIJERALES ----------------
 ANG_PEND = math.degrees(math.atan(PEND))                       # ~5,7°
-ANG_BISEL = math.degrees(math.atan((D - Y0) / DIAG_X))          # ~23,6° (borde diagonal en planta)
+ANG_BISEL = 0.0          # ~23,6° (borde diagonal en planta)
 Y_INI = 0.041                                                   # cara de la viga 2x8 apernada al muro
 def largo_corte(x):
     return (borde_techo(x) - Y_INI) * math.sqrt(1 + PEND ** 2)
@@ -1091,7 +1095,7 @@ def tijerales_tipo_b(ax):
     for n_, x, ye, lg in tij:
         ax.plot([x, x], [Y_INI, ye], color="#8b4513", lw=2.5)
         ax.text(x, ye + 0.15, n_, ha="center", fontsize=7, color="#8b4513", weight="bold")
-    ax.text(NW / 2, Y0 - 0.25, "destaje", ha="center", fontsize=7.5, color="#6b4f1d")
+    ax.text(XN + NW / 2, D + 0.15, "destaje", ha="center", fontsize=7.5, color="#6b4f1d")
     ax.text(XB / 2 + 0.3, 1.0, "TERRAZA", ha="center", fontsize=10, weight="bold", color="#6b4f1d")
     ax.text((XB + L) / 2, 1.0, "BODEGA", ha="center", fontsize=10, weight="bold", color="#1f4e79")
     ax.text(0.1, D + ALERO + 0.55, "rojo: viga 2x8 + soporte Simpson · gris: viga 2x6 doble / muro bodega · ■ pilar 4x4",
@@ -1113,7 +1117,7 @@ def tabla_corte(ax):
                                             "Apoyo ext. a", "Punta", "Sobrante"],
                  loc="upper center", cellLoc="center", colWidths=[0.10, 0.08, 0.12, 0.14, 0.18, 0.22, 0.14])
     ax.text(0.0, 0.08, ("Medidas en metros. 'Apoyo ext. a' = distancia desde el muro de la casa al muro de bodega o viga de terraza.\n"
-                        "Los 15 tijerales son iguales (2,87 m). T1, en el destaje, apoya en la viga a 2,15 m y vuela 0,75 m.\n"
+                        "Los 15 tijerales son iguales (2,87 m). T15, en el destaje de la bodega, apoya a 2,15 m y vuela 0,75 m.\n"
                         "Junto a la casa: punta a plomo, de tope en el soporte Simpson 2x6. En el apoyo exterior: sin rebaje, 2 H3."),
             fontsize=8, va="top", transform=ax.transAxes)
     t.auto_set_font_size(False); t.set_fontsize(7.5); t.scale(1, 1.15)
@@ -1185,11 +1189,11 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
             ["Bloqueos entre tijerales (muro bodega)", "Pino IPV 2x6 x 3,20", "1", ""],
         ]),
         ("TERRAZA", [
-            ["Viga exterior doble (recta, con destaje)", "Pino IPV 2x6 x 3,20", "4", "unir sobre pilar"],
-            ["Pilares", "Pino IPV 4x4 x 3,20", "3", ""],
+            ["Viga exterior doble (recta, 4,75 m)", "Pino IPV 2x6 x 3,20", "4", "unir sobre pilar"],
+            ["Pilares", "Pino IPV 4x4 x 3,20", "2", ""],
         ]),
         ("PISO TERRAZA (completar rectángulo)", [
-            ["Ampliación de piso", "según piso existente", "~2,3 m²", "POR DEFINIR: falta estructura del piso"],
+            ["Ampliación de piso (triángulo de la diagonal)", "según piso existente", "~2,4 m²", "POR DEFINIR: falta estructura del piso"],
         ]),
         ("CUBIERTA TRAPEZOIDAL", [
             ["Plancha translúcida (policarbonato)", f"largos: {largos_T}", str(nT), "mismo perfil que la opaca"],
@@ -1219,7 +1223,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
             ["Cadenetas (2 corridas)", "Pino IPV 2x3 x 3,20", str(N_CAD), ""],
             ["Dintel puerta (de canto)", "Pino IPV 2x4 x 3,20", "1", ""],
             ["Puerta exterior + marco", "80 x 200 cm", "1", "bisagras 3 x 3½\" + cerradura"],
-            ["Escuadras metálicas base pilares", "galvanizadas", "6", "2 por pilar"],
+            ["Escuadras metálicas base pilares", "galvanizadas", "4", "2 por pilar"],
         ]),
         ("TORNILLOS (sin clavos · detalle en planilla Excel)", [
             [TIPOS[k], "", str(v), ""] for k, v in sorted(TOT_TORN.items())
@@ -1237,7 +1241,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
             ["SmartPanel exterior", "1,22 x 2,44", "11", "~18 m², pintar"],
             ["Contrachapado ranurado interior", "1,22 x 2,44", "10", "~18 m² (sin muro de la casa)"],
             ["Barrera de humedad (Tyvek/fieltro)", "rollo", "1", "detrás del SmartPanel"],
-            ["Esquineros / tapajuntas", "2,40 m", "4", ""],
+            ["Esquineros / tapajuntas", "2,40 m", "6", "incluye las 2 esquinas del destaje"],
             ["Cortagotera en Z", "3,00 m", "3", "unión de franja superior"],
             ["Grapas para barrera de humedad", "caja", "1", "corchetera"],
 ]),

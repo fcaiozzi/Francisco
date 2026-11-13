@@ -23,7 +23,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 ## Decisiones tomadas
 
 - Forma: piso y techo RECTANGULARES (8,25 x 2,50; techo 8,25 x 2,90), esquinas a 90°, sin ochavo.
-  Solo un destaje de 0,59 x 0,35 en la esquina exterior de la terraza (falta definir el piso nuevo ~2,3 m²).
+  Destaje de 0,35 x 0,35 en la esquina exterior de la BODEGA; terraza rectangular completa (falta definir el piso nuevo ~2,4 m²).
 - Tijerales pino IPV 2x6 cada 60 cm (15, todos iguales de 2,87 m), alero de 40 cm, pendiente ≈ 10 %.
   (Se evaluó 2x4½": queda al límite de la norma; se mantiene 2x6.)
 - Junto a la casa: tijeral de tope contra viga 2x8 apernada al muro, con soporte Simpson 2x6 ZMAX.

@@ -65,11 +65,11 @@ add(g, "Soporte sismo y viento H3 – tijerales sobre tabique bodega", "Simpson 
 add(g, "Soporte sismo y viento H3 – tijerales sobre viga terraza", "Simpson · Imperial SKU 142181", 16, "unidad", 16, 1090, IMP,
     "RECOMENDADO: 8 tijerales x 2. La terraza es abierta y el viento levanta más", L["h25a"])
 g = "2. TERRAZA"
-add(g, "Viga exterior doble (recta, con destaje)", "Pino IPV 2x6 x 3,20 m", 4, "pieza", 4, 14990, EASY, "", L["2x6"])
-add(g, "Pilares", "Pino IPV 4x4 x 3,20 m", 3, "pieza", 3, 13990, EST, "no apareció impregnado 4x4 en web; consultar", "")
-add(g, "Escuadras base de pilares", "Ángulo refuerzo galv. 2x4\" Simpson", 6, "unidad", 6, 4790, SOD, "", L["angulo"])
+add(g, "Viga exterior doble (recta, 4,75 m)", "Pino IPV 2x6 x 3,20 m", 4, "pieza", 4, 14990, EASY, "", L["2x6"])
+add(g, "Pilares", "Pino IPV 4x4 x 3,20 m", 2, "pieza", 2, 13990, EST, "no apareció impregnado 4x4 en web; consultar", "")
+add(g, "Escuadras base de pilares", "Ángulo refuerzo galv. 2x4\" Simpson", 4, "unidad", 4, 4790, SOD, "", L["angulo"])
 g = "2b. PISO TERRAZA (completar rectángulo)"
-add(g, "Ampliación de piso ~2,3 m² (vigas, tablas, pilotes)", "Según piso existente", 1, "global", 1, 0, EST,
+add(g, "Ampliación de piso ~2,4 m² (triángulo de la diagonal)", "Según piso existente", 1, "global", 1, 0, EST,
     "POR DEFINIR: falta saber cómo está hecho el piso actual", "")
 g = "3. CUBIERTA"
 add(g, "Plancha translúcida (policarbonato)", "Policarbonato greca 0,5 mm ~3,00 m", nT, "plancha", nT, 22190, EST,
@@ -115,7 +115,7 @@ g = "5. BODEGA – REVESTIMIENTOS"
 add(g, "SmartPanel exterior", "LP SmartSide 11,1 mm 1,22 x 2,44", 11, "plancha", 11, 35290, SOD, "", L["smart"])
 add(g, "Contrachapado ranurado interior", "Terciado ranurado 9 mm 1,22 x 2,44", 10, "plancha", 10, 18820, SOD, "", L["terciado"])
 add(g, "Barrera de humedad", "Membrana hidrófuga 40 m² (Volcan)", 1, "rollo", 1, 20990, SOD, "Tyvek 46 m² cuesta ~$136.528", L["membrana"])
-add(g, "Esquineros / tapajuntas", "Pino IPV 1x4 x 3,20 m", 4, "pieza", 4, 3290, EST, "", "")
+add(g, "Esquineros / tapajuntas", "Pino IPV 1x4 x 3,20 m", 6, "pieza", 6, 3290, EST, "incluye 2 esquinas del destaje", "")
 add(g, "Cortagotera en Z", "Perfil galvanizado 3,00 m", 3, "unidad", 3, 4500, EST, "", "")
 add(g, "Grapas para membrana", "Caja grapas corchetera", 1, "caja", 1, 3000, EST, "", "")
 g = "6. TORNILLOS (sin clavos)"

@@ -55,7 +55,7 @@ add(g, "Tijerales c/60 cm", "Pino IPV 2x6 x 3,20 m", 15, "pieza", 15, 14990, EAS
 add(g, "Viga 2x8 apernada al muro (tijerales de tope)", "Pino IPV 2x8 x 3,20 m", 3, "pieza", 3, 20990, EST,
     "2x8 impregnado no apareció en web. Alternativa: 2x8 cepillado seco Sodimac $15.790 + preservante", "")
 add(g, "Costaneras c/40 cm", "Pino IPV 2x2 x 3,20 m", ns["N_COST"], "pieza", ns["N_COST"], 2890, EASY, "", L["2x2"])
-add(g, "Tapacán vertical", "Tabla pino seco cepillado 1x8 x 3,20 m", 4, "pieza", 4, 5950, SOD,
+add(g, "Tapacán vertical", "Tabla pino seco cepillado 1x8 x 3,20 m", 3, "pieza", 3, 5950, SOD,
     "1x8 impregnado no apareció en web; pintar o aplicar preservante en todas las caras", L["1x8"])
 add(g, "Bloqueos entre tijerales", "Pino IPV 2x6 x 3,20 m", 1, "pieza", 1, 14990, EASY, "", L["2x6"])
 add(g, "Soporte viga madera cepillada 2x6 ZMAX (muro casa)", "Simpson · Imperial SKU 142184", 15, "unidad", 15, 2590, IMP,
@@ -65,9 +65,12 @@ add(g, "Soporte sismo y viento H3 – tijerales sobre tabique bodega", "Simpson 
 add(g, "Soporte sismo y viento H3 – tijerales sobre viga terraza", "Simpson · Imperial SKU 142181", 16, "unidad", 16, 1090, IMP,
     "RECOMENDADO: 8 tijerales x 2. La terraza es abierta y el viento levanta más", L["h25a"])
 g = "2. TERRAZA"
-add(g, "Viga exterior doble (sigue la diagonal)", "Pino IPV 2x6 x 3,20 m", 4, "pieza", 4, 14990, EASY, "", L["2x6"])
+add(g, "Viga exterior doble (recta, con destaje)", "Pino IPV 2x6 x 3,20 m", 4, "pieza", 4, 14990, EASY, "", L["2x6"])
 add(g, "Pilares", "Pino IPV 4x4 x 3,20 m", 3, "pieza", 3, 13990, EST, "no apareció impregnado 4x4 en web; consultar", "")
 add(g, "Escuadras base de pilares", "Ángulo refuerzo galv. 2x4\" Simpson", 6, "unidad", 6, 4790, SOD, "", L["angulo"])
+g = "2b. PISO TERRAZA (completar rectángulo)"
+add(g, "Ampliación de piso ~2,3 m² (vigas, tablas, pilotes)", "Según piso existente", 1, "global", 1, 0, EST,
+    "POR DEFINIR: falta saber cómo está hecho el piso actual", "")
 g = "3. CUBIERTA"
 add(g, "Plancha translúcida (policarbonato)", "Policarbonato greca 0,5 mm ~3,00 m", nT, "plancha", nT, 22190, EST,
     "precio prorrateado desde greca 0,81x2,50 m ($18.490). Ver nota perfil", L["greca"])
@@ -75,13 +78,13 @@ add(g, "Plancha opaca (zinc-alum)", "Zincalum 5V 0,35 x 895 x 3000 mm", nO, "pla
     "PV4 no está en Sodimac/Easy; 5V es lo más parecido", L["5v"])
 g = "3a. HOJALATERÍA DE REMATE"
 add(g, "Plancha lisa zincalum para forros y remates", "0,35-0,4 x 1000 x 3000 mm", 3, "plancha", 3, 11620, EASY,
-    "forro muro 8,25 m (3 tiras) + remates laterales 2,9 y 1,5 m", L["lisa"])
+    "forro muro 8,25 m (3 tiras) + 2 remates laterales de 2,9 m", L["lisa"])
 add(g, "Plegado de hojalatería (forro + remates)", "Servicio hojalatero", 1, "global", 1, 25000, EST, "cotizar en barraca/hojalatero local", "")
 add(g, "Cierre de espuma para perfil trapezoidal", "Tira ~1 m", 9, "unidad", 9, 1500, EST, "bajo el forro, junto al muro", "")
 add(g, "Sellante poliuretano", "Cartucho", 2, "unidad", 2, 6990, EST, "borde superior del forro y traslapos", "")
 g = "3b. AGUAS LLUVIA (PVC café)"
-add(g, "Canaleta aguas lluvia PVC café", "DVP Pro 110 mm x 4 m", 3, "pieza", 3, 12990, SOD, "borde de 8,55 m (diagonal 3,60 + recto 4,95)", L["canal"])
-add(g, "Unión de canaleta", "PVC café", 3, "unidad", 3, 1490, EASY, "2 empalmes + quiebre de la diagonal (cortar en ángulo y sellar)", L["union"])
+add(g, "Canaleta aguas lluvia PVC café", "DVP Pro 110 mm x 4 m", 3, "pieza", 3, 12990, SOD, "borde recto de 8,25 m", L["canal"])
+add(g, "Unión de canaleta", "PVC café", 2, "unidad", 2, 1490, EASY, "2 empalmes", L["union"])
 add(g, "Tapa de canaleta", "PVC café", 2, "unidad", 2, 1390, EASY, "", L["tapa"])
 add(g, "Salida de canaleta a bajada", "PVC café Ø80", 1, "unidad", 1, 3990, EST, "en el extremo derecho (esquina bodega)", "")
 add(g, "Gancho / soporte de canaleta", "PVC café", 19, "unidad", 19, 1190, EASY, "c/50 cm, atornillado al tapacán 1x8", L["gancho"])
@@ -112,7 +115,7 @@ g = "5. BODEGA – REVESTIMIENTOS"
 add(g, "SmartPanel exterior", "LP SmartSide 11,1 mm 1,22 x 2,44", 11, "plancha", 11, 35290, SOD, "", L["smart"])
 add(g, "Contrachapado ranurado interior", "Terciado ranurado 9 mm 1,22 x 2,44", 10, "plancha", 10, 18820, SOD, "", L["terciado"])
 add(g, "Barrera de humedad", "Membrana hidrófuga 40 m² (Volcan)", 1, "rollo", 1, 20990, SOD, "Tyvek 46 m² cuesta ~$136.528", L["membrana"])
-add(g, "Esquineros / tapajuntas", "Pino IPV 1x4 x 3,20 m", 5, "pieza", 5, 3290, EST, "", "")
+add(g, "Esquineros / tapajuntas", "Pino IPV 1x4 x 3,20 m", 4, "pieza", 4, 3290, EST, "", "")
 add(g, "Cortagotera en Z", "Perfil galvanizado 3,00 m", 3, "unidad", 3, 4500, EST, "", "")
 add(g, "Grapas para membrana", "Caja grapas corchetera", 1, "caja", 1, 3000, EST, "", "")
 g = "6. TORNILLOS (sin clavos)"

@@ -23,6 +23,7 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 ## Decisiones tomadas
 
 - Tijerales pino IPV 2x6 cada 60 cm (15), alero de 40 cm, pendiente ≈ 10 %.
+  (Se evaluó 2x4½": queda al límite de la norma; se mantiene 2x6.)
 - Junto a la casa: tijeral de tope contra viga 2x8 apernada al muro, con soporte Simpson 2x6 ZMAX.
 - Por fuera: soportes Simpson H3, uno por lado de cada tijeral.
 - Muro exterior de la bodega: 2,36 m bajo el tijeral.

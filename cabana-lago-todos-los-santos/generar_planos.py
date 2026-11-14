@@ -32,7 +32,8 @@ Z_CASA = 2.63 + H_T               # parte de abajo del tijeral en el muro = 2,63
 H_V = 0.23                        # tabla 1x10 cepillada 4 caras apernada al muro (alto)
 TE_V = 0.019                      # espesor de esa tabla
 Z_EX = 2.63 + 0.23 + 0.17         # parte de abajo del alero existente (medido) = 3,03 m
-PEND = 0.12
+Z_TAB = 2.34                      # alto del tabique donde apoyan los tijerales (medido)
+PEND = (2.63 - Z_TAB) / 2.48      # = 11,7 %
 def zt(y):
     return Z_CASA - PEND * y
 
@@ -466,7 +467,7 @@ def corte_transversal(ax):
     _cota(ax, (-1.45, 0), (-1.45, Z_EX), "3,03", off=(-0.12, 0), rot=90)
     _cota(ax, (0, -0.45), (D, -0.45), "2,50 (piso)")
     _cota(ax, (D, -0.45), (ye, -0.45), f"alero {ye - D:.2f}")
-    ax.text(1.4, zt(1.4) + 0.32, "pendiente 12 %", ha="center", fontsize=8.5, rotation=-3)
+    ax.text(1.4, zt(1.4) + 0.32, f"pendiente {PEND * 100:.1f} %".replace(".", ","), ha="center", fontsize=8.5, rotation=-3)
     # rótulos
     notas = [((0.03, zl + 0.04), (0.55, 1.75), "ver DETALLE 1"),
              ((D - 0.07, zt(D) - H_T - 0.05), (D + 0.55, 1.95), "ver DETALLE 2"),
@@ -1135,7 +1136,7 @@ R_TE = 0.019     # espesor tabla 1x10
 R_ALERO_EX = 0.17  # de la tabla al alero existente (medido)
 R_A = 2.48       # muro cabaña -> cara exterior del apoyo (medido)
 R_H = 0.165      # tijeral 2x6½"
-R_P = 0.12       # pendiente elegida
+R_P = PEND       # pendiente (tabique a 2,34 m)
 R_ALERO = 0.40
 r_zb = lambda y: R_H0 - R_P * y                   # parte de abajo del tijeral
 r_zt = lambda y: R_H0 + R_H / math.cos(math.atan(R_P)) - R_P * y   # parte de arriba (medida a plomo)
@@ -1172,7 +1173,7 @@ def corte_real(ax):
     ch(0, R_A, -0.35, "2,48"); ch(R_A, ye, -0.35, "alero 0,40")
     ax.plot([0.5, 1.5, 1.5, 0.5], [r_zt(0.5) + 0.35, r_zt(0.5) + 0.35, r_zt(0.5) + 0.23, r_zt(0.5) + 0.35], color="#2c7fb8", lw=1.2)
     ax.text(1.0, r_zt(0.5) + 0.38, "100", ha="center", fontsize=8, color="#2c7fb8")
-    ax.text(1.55, r_zt(0.5) + 0.27, f"12  →  pendiente 12 % ({math.degrees(math.atan(R_P)):.1f}°)", fontsize=9,
+    ax.text(1.55, r_zt(0.5) + 0.27, f"{R_P * 100:.1f}  →  pendiente {R_P * 100:.1f} % ({math.degrees(math.atan(R_P)):.1f}°)".replace(".", ","), fontsize=9,
             color="#2c7fb8", weight="bold")
     notas = [((R_TE / 2, R_H0 + 0.18), (0.55, 3.32), "tabla 1x10 cep. 4/c\napernada al muro"),
              ((1.2, r_zb(1.2) + 0.08), (1.4, 2.05), "tijeral 2x6½\"\nlargo 2,88 m"),
@@ -1182,7 +1183,7 @@ def corte_real(ax):
         ax.annotate(tx, p, tt, fontsize=8.5, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
                     bbox=dict(fc="white", ec="none", pad=0.5), zorder=8)
     ax.set_xlim(-0.95, ye + 0.6); ax.set_ylim(-0.55, 3.55)
-    ax.set_title("CORTE CON MEDIDAS REALES · pendiente óptima 12 %", fontsize=11, weight="bold")
+    ax.set_title(f"CORTE CON MEDIDAS REALES · tabique 2,34 m → pendiente {R_P * 100:.1f} %".replace(".", ","), fontsize=11, weight="bold")
 
 def detalle_corte_real(ax):
     ax.set_aspect("equal"); ax.axis("off")
@@ -1223,7 +1224,7 @@ def detalle_corte_real(ax):
 def tabla_pendientes(ax):
     ax.axis("off")
     filas = []
-    for p in (0.08, 0.10, 0.12, 0.13, 0.15):
+    for p in (0.08, 0.10, R_P, 0.13, 0.15):
         ht = R_H0 - p * R_A
         ok = ht - 0.082 >= 2.03 + 0.185
         filas.append([f"{p * 100:.0f} %", f"{math.degrees(math.atan(p)):.1f}°", f"{ht:.2f}", f"{ht - p * R_ALERO:.2f}",
@@ -1233,8 +1234,8 @@ def tabla_pendientes(ax):
     t.auto_set_font_size(False); t.set_fontsize(8.5); t.scale(1, 1.3)
     for k in range(6):
         t[3, k].set_facecolor("#d4edda")
-    ax.text(0, 0.18, ("Pendiente óptima 12 %: es más que el 10 % mínimo recomendado para plancha trapezoidal y policarbonato\n"
-                      "en zona lluviosa, y todavía deja el tabique opuesto en 2,33 m, suficiente para la puerta (2,05) y\n"
+    ax.text(0, 0.18, ("Pendiente 11,7 % (tabique a 2,34 m): sobre el 10 % mínimo recomendado para plancha trapezoidal y policarbonato\n"
+                      "en zona lluviosa, y deja el tabique opuesto en 2,34 m, suficiente para la puerta (2,05) y\n"
                       "para la ventana V2 con su dintel 2x8 (2,03 + 0,185 = 2,22 m + solera doble). Con 15 % ya no cabe."),
             fontsize=8.5, va="top", transform=ax.transAxes)
     ax.set_title("COMPARACIÓN DE PENDIENTES (parte de abajo del tijeral en el muro = 2,63 m)", fontsize=10, weight="bold")
@@ -1259,7 +1260,7 @@ def _pieza_banco(ax, paso):
         ax.annotate("", (0, h + 0.03), (off, h + 0.03), arrowprops=dict(arrowstyle="<->", lw=1.2, color="#c0392b"))
         ax.text(off / 2, h + 0.05, f"{off * 100:.1f} cm", ha="center", color="#c0392b", fontsize=10, weight="bold")
         ax.plot([0, off], [h, 0], color="#c0392b", lw=2.5)
-        ax.text(-0.01, h + 0.095, "2 · en el canto de ARRIBA corre 2 cm hacia la punta\n    y une con el pie de la escuadra: esa es la línea de corte",
+        ax.text(-0.01, h + 0.095, f"2 · en el canto de ARRIBA corre {off * 100:.1f} cm hacia la punta\n    y une con el pie de la escuadra: esa es la línea de corte",
                 color="#c0392b", fontsize=8.5, va="bottom")
     if paso < 3:
         ax.text(Lp - 0.01, h / 2, "tijeral 2x6½\"\n(acostado en el banco)", ha="right", va="center", fontsize=8)
@@ -1293,7 +1294,7 @@ def _pieza_colocada(ax):
     ax.plot([x0, x0], [-0.06, zt_(x0) + 0.06], color="#c0392b", lw=1, ls=":")
     ax.text(x0 + 0.006, zt_(x0) + 0.07, "corte VERTICAL (a plomo):\nqueda pegado a la tabla", fontsize=8.5, color="#c0392b", weight="bold")
     ax.plot([x0 + 0.15, 0.40, 0.40], [zt_(x0 + 0.15) + 0.03, zt_(x0 + 0.15) + 0.03, zt_(0.40) + 0.03], color="#2c7fb8", lw=1)
-    ax.text(0.41, zt_(0.40) + 0.035, f"pendiente {PEND * 100:.0f} % ({math.degrees(th):.1f}°)", fontsize=8, color="#2c7fb8")
+    ax.text(0.41, zt_(0.40) + 0.035, f"pendiente {PEND * 100:.1f} % ({math.degrees(th):.1f}°)".replace(".", ","), fontsize=8, color="#2c7fb8")
     notas = [((x0 + seat / 2, z0 - 0.002), (0.22, -0.08), f"4 · ASIENTO: rebajar esta cuña\n({PEND * seat * 1000:.0f} mm en {seat * 100:.1f} cm) para que apoye\nplano sobre el soporte Simpson"),
              ((x0 + seat + 0.004, 0.03), (0.30, 0.03), "soporte Simpson 2x6"),
              ((TE_V / 2, 0.18), (-0.06, 0.33), "tabla 1x10\napernada al muro")]
@@ -1310,28 +1311,50 @@ def _pieza_completa(ax):
     ax.annotate("", (0, h + 0.05), (Lc, h + 0.05), arrowprops=dict(arrowstyle="<->", lw=0.9))
     ax.text(Lc / 2, h + 0.07, f"canto de ARRIBA {Lc:.2f} m", ha="center", fontsize=9, weight="bold")
     ax.annotate("", (off, -0.05), (Lc + off, -0.05), arrowprops=dict(arrowstyle="<->", lw=0.9))
-    ax.text(Lc / 2, -0.11, f"canto de ABAJO {Lc:.2f} m (corrido {off * 100:.0f} cm)", ha="center", fontsize=9)
+    ax.text(Lc / 2, -0.11, f"canto de ABAJO {Lc:.2f} m (corrido {off * 100:.1f} cm)", ha="center", fontsize=9)
     ax.text(-0.03, h / 2, "punta\ncasa", ha="right", va="center", fontsize=8.5, weight="bold")
     ax.text(Lc + off + 0.03, h / 2, "punta\nalero", ha="left", va="center", fontsize=8.5, weight="bold")
     ax.text(Lc / 2, h / 2, "las 2 puntas se cortan a plomo y quedan PARALELAS (la pieza es un paralelogramo)",
             ha="center", va="center", fontsize=8.5)
     ax.set_xlim(-0.35, Lc + 0.40); ax.set_ylim(-0.18, h + 0.13)
 
+def _apoyo_tabique(ax):
+    ax.set_aspect("equal"); ax.axis("off")
+    th = math.atan(PEND); h = H_T; w = 0.065
+    # tabique 2x3 + solera doble, cara superior a Z_TAB
+    ax.add_patch(Rectangle((0, Z_TAB - 0.45), w, 0.45 - 0.082, fc="#d9e8f5", ec="#1f4e79"))
+    ax.add_patch(Rectangle((0, Z_TAB - 0.082), w, 0.082, fc="#9dbbd9", ec="#1f4e79"))
+    dz = w * PEND                       # profundidad del rebaje (pico de pájaro)
+    zb = lambda x: Z_TAB + dz - PEND * x    # canto inferior: el rebaje toca la solera en todo el ancho
+    zt_ = lambda x: zb(x) + h / math.cos(th)
+    x0, x1 = -0.40, 0.45
+    pts = [(x0, zt_(x0)), (x1, zt_(x1)), (x1, zb(x1)), (w, zb(w)), (w, Z_TAB), (0, Z_TAB), (0, zb(0)), (x0, zb(x0))]
+    ax.add_patch(Polygon(pts, fc=MADERA, ec="k", lw=1.5, zorder=3))
+    ax.add_patch(Polygon([(0, Z_TAB), (w, Z_TAB), (w, zb(w)), (0, zb(0))], fc="#f8c9c4", ec="#c0392b", lw=1.2, zorder=4))
+    ax.add_patch(Rectangle((-0.03, Z_TAB - 0.07), 0.025, 0.16, fc="#333", ec="k", zorder=6))
+    ax.annotate("", (-0.07, 0), (-0.07, Z_TAB), arrowprops=dict(arrowstyle="<->", lw=0.8)) if False else None
+    ax.plot([-0.30, w + 0.15], [Z_TAB, Z_TAB], color="#c0392b", lw=0.8, ls=":")
+    ax.text(-0.40, Z_TAB - 0.05, "2,34 m = cara de la solera\n= parte de abajo del tijeral", va="top", fontsize=8.5,
+            color="#c0392b", weight="bold")
+    notas = [((w / 2, Z_TAB + dz / 2), (0.25, Z_TAB - 0.18),
+              f"5 · PICO DE PÁJARO: rebaje horizontal\nde {w * 100:.1f} cm (ancho del tabique), {dz * 1000:.0f} mm de\nprofundidad. El tijeral asienta plano."),
+             ((-0.02, Z_TAB), (-0.25, Z_TAB - 0.20), "H3 uno por lado"),
+             ((w / 2, Z_TAB - 0.25), (0.25, Z_TAB - 0.36), "tabique 2x3 + solera doble")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=8, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
+                    bbox=dict(fc="white", ec="none", pad=0.5), zorder=8)
+    ax.set_xlim(-0.42, 0.62); ax.set_ylim(Z_TAB - 0.45, Z_TAB + 0.30)
+
 def lamina_corte_plomo(fig):
     titulo(fig, "Lámina 11: CORTE A PLOMO DEL TIJERAL · PASO A PASO")
     for k, (pos, tt) in enumerate([([0.02, 0.56, 0.31, 0.32], "PASO 1 · marcar la escuadra"),
-                                    ([0.35, 0.56, 0.31, 0.32], "PASO 2 · correr 2 cm arriba"),
+                                    ([0.35, 0.56, 0.31, 0.32], f"PASO 2 · correr {H_T * PEND * 100:.1f} cm arriba".replace(".", ",")),
                                     ([0.68, 0.56, 0.31, 0.32], "PASO 3 · cortar")]):
         ax = fig.add_axes(pos); _pieza_banco(ax, k + 1); ax.set_title(tt, fontsize=11, weight="bold")
-    ax = fig.add_axes([0.02, 0.20, 0.55, 0.34]); _pieza_colocada(ax)
-    ax.set_title("ASÍ QUEDA COLOCADO (pieza inclinada 12 %)", fontsize=11, weight="bold")
-    ax = fig.add_axes([0.60, 0.25, 0.38, 0.20]); ax.axis("off")
-    ax.text(0, 1, "POR QUÉ 2 cm", fontsize=11, weight="bold", va="top")
-    ax.text(0, 0.80, (f"El tijeral va inclinado {PEND * 100:.0f} %. Si lo cortas a escuadra (90°),\n"
-                      f"al ponerlo inclinado la punta queda torcida y no asienta contra\n"
-                      f"la tabla. Corriendo {H_T * PEND * 100:.1f} cm ({H_T * 100:.1f} cm de alto x {PEND:.2f}) la punta\n"
-                      "queda vertical y apoya completa contra la tabla del muro."),
-            fontsize=9.5, va="top", linespacing=1.5)
+    ax = fig.add_axes([0.01, 0.20, 0.42, 0.34]); _pieza_colocada(ax)
+    ax.set_title(f"APOYO EN EL MURO DE LA CABAÑA (pieza inclinada {PEND * 100:.1f} %)".replace(".", ","), fontsize=11, weight="bold")
+    ax = fig.add_axes([0.44, 0.20, 0.55, 0.34]); _apoyo_tabique(ax)
+    ax.set_title("APOYO EN EL TABIQUE DE 2,34 m", fontsize=11, weight="bold")
     ax = fig.add_axes([0.04, 0.03, 0.92, 0.15]); _pieza_completa(ax)
     ax.set_title("LA PIEZA COMPLETA", fontsize=10.5, weight="bold")
 
@@ -1356,7 +1379,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
     titulo(fig, "Lámina 2: ISOMÉTRICO (vista desde afuera, casa existente atrás en gris)")
     a1 = fig.add_axes([0.02, 0.06, 0.96, 0.84], projection="3d")
     iso(a1, azim=-120)
-    fig.text(0.04, 0.04, "Tijerales 2x6½\" c/60 cm · alero 40 cm · cubierta trapezoidal translúcida en terraza e intercalada en bodega · pendiente 12 % · "
+    fig.text(0.04, 0.04, "Tijerales 2x6½\" c/60 cm · alero 40 cm · cubierta trapezoidal translúcida en terraza e intercalada en bodega · pendiente 11,7 % · "
              "tabla 1x10 apernada al muro (rojo) · canaleta PVC café",
              fontsize=9, color="#444")
     pdf.savefig(fig); fig.savefig(OUT + "2_isometrico.png", dpi=110); plt.close(fig)
@@ -1375,8 +1398,8 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
         "    (borde bajo a 2,63 m), con soporte viga Simpson 2x6 ZMAX (ver lámina 10).\n"
         "    Por fuera: sobre muro de bodega o viga 2x6 doble, con 2 soportes\n"
         "    sismo y viento Simpson H3 por tijeral (uno por lado).\n"
-        "3. MEDIDAS REALES: tijeral a 2,63 m en el muro, pendiente 12 % (CONFIRMADA),\n"
-        "    muro exterior 2,33 m bajo el tijeral; alero existente a 3,03 m.\n"
+        "3. MEDIDAS REALES: tijeral a 2,63 m en el muro y 2,34 m en el tabique: pendiente 11,7 %,\n"
+        "    alero existente a 3,03 m.\n"
         "4. Costaneras 2x2 c/40 cm; plancha en una sola pieza, vuela 8 cm sobre la canaleta (DET. 5).\n"
         "5. Tijerales 2x6½\" pino IPV cada 60 cm. Cubierta translúcida en terraza e\n"
         "    intercalada (translúcida / opaca) en bodega.\n"
@@ -1519,7 +1542,7 @@ with PdfPages(OUT + "ampliacion_cabana.pdf") as pdf:
         "    se interrumpe en el vano: el antepecho hace ese trabajo.\n"
         "5. Ventanas centradas: V1 en el muro lateral (2,10 m hasta el destaje); V2 en el muro largo (3,10 m).\n"
         "6. Borde superior del vano a 2,03 m (ventana ~2,0 m, alineada con la puerta). No puede ir el antepecho a 2,0 m: no\n"
-        "    queda altura para el dintel bajo los tijerales (el muro exterior mide 2,33 m).\n"
+        "    queda altura para el dintel bajo los tijerales (el muro exterior mide 2,34 m).\n"
         "7. Ventanas de aluminio (fijas o proyectantes) a medida, con botaguas de zincalum arriba y sello de silicona."),
         fontsize=8.3, va="top", linespacing=1.5)
     pdf.savefig(fig); fig.savefig(OUT + "6_ventanas.png", dpi=110); plt.close(fig)

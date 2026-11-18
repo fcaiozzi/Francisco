@@ -19,6 +19,8 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 | `9_tijerales.png` | Lámina 9: detalle de tijerales, cortes y tabla de corte |
 | `11_corte_plomo.png` | Lámina 11: corte a plomo del tijeral, paso a paso |
 | `10_pendiente_corte.png` | Lámina 10: medidas reales, pendiente 11,7 % y corte del tijeral en el muro |
+| `12_ducto_calefon.png` | Lámina 12: paso del ducto del calefón por el techo |
+| `escantillon_ducto_calefon.pdf` | Escantillón 1:1 (A3) del collarín y agujero del ducto, Ø 80/100/110/125 |
 | `generar_planos.py` | Programa que dibuja las láminas y el PDF |
 | `generar_planilla.py` | Programa que arma la planilla Excel |
 

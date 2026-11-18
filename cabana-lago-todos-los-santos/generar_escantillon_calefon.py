@@ -149,10 +149,103 @@ def lamina_explicativa():
     fig.savefig(OUT + "12_ducto_calefon.png", dpi=110)
     return fig
 
+# ---------------- BASE DEL FORRO desde el muro (va bajo el forro de atraque) ----------------
+X_REF = 0.75        # distancia horizontal muro → eje del ducto (REFERENCIAL: medir en obra)
+ANCHO_BASE = 600    # mm, de cresta a cresta de la plancha trapezoidal (ajustar a la onda real)
+DOBLEZ = 50         # mm, pestaña que sube por el muro bajo el forro de atraque
+BAJO_DUCTO = 200    # mm que la base sigue más abajo del ducto, montada SOBRE la plancha
+
+def largo_base(X, D):
+    """largo de la base medido sobre la pendiente, desde el muro hasta su borde bajo (mm)."""
+    return (X * 1000 + D / 2) / math.cos(ALFA) + BAJO_DUCTO
+
+def lamina_base():
+    fig = plt.figure(figsize=(16.5, 11.7))
+    fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16, weight="bold")
+    fig.text(0.04, 0.92, "Lámina 12b: BASE DEL DUCTO DEL CALEFÓN · nace en el muro y entra bajo el forro de atraque",
+             fontsize=10, color="#444")
+    D = 100
+    # ---- CORTE ----
+    ax = fig.add_axes([0.02, 0.40, 0.56, 0.50]); ax.set_aspect("equal"); ax.axis("off")
+    zr = lambda y: 2.80 - PEND * y          # cara de la plancha (referencial)
+    ax.add_patch(Rectangle((-0.30, 2.30), 0.30, 0.85, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.plot([-0.45, 0.25], [3.03 + 0.04, 3.03 - 0.03], color="#555", lw=6)
+    ax.text(-0.15, 2.55, "MURO\nCABAÑA", ha="center", fontsize=8, weight="bold", bbox=dict(fc="white", ec="none"))
+    yb = X_REF + D / 2000 + BAJO_DUCTO / 1000
+    # plancha trapezoidal
+    ax.plot([0, 1.35], [zr(0), zr(1.35)], color="#555", lw=3, zorder=2)
+    # base del forro (azul)
+    ax.plot([0.004, 0.004, yb], [zr(0) + DOBLEZ / 1000, zr(0) + 0.006, zr(yb) + 0.006], color="#2c7fb8", lw=4,
+            solid_capstyle="round", zorder=4)
+    # forro de atraque (gris) por encima de la base
+    ax.plot([-0.008, 0.0, 0.0, 0.22, 0.24], [2.98, 2.98, zr(0) + 0.03, zr(0.22) + 0.03, zr(0.24) + 0.012], color="#5f6b73",
+            lw=4, zorder=5)
+    # ducto + collarín
+    d = D / 1000
+    ax.add_patch(Rectangle((X_REF - d / 2, zr(X_REF) - 0.30), d, 0.95, fc="#bbb", ec="k", zorder=3))
+    ax.add_patch(Polygon([(X_REF - d / 2 - 0.006, zr(X_REF - d / 2) + 0.006), (X_REF + d / 2 + 0.006, zr(X_REF + d / 2) + 0.006),
+                          (X_REF + d / 2 + 0.006, zr(X_REF) + 0.10), (X_REF - d / 2 - 0.006, zr(X_REF) + 0.10)],
+                         fc="#7d8a91", ec="k", zorder=6))
+    ax.add_patch(Polygon([(X_REF - 0.10, zr(X_REF) + 0.65), (X_REF + 0.10, zr(X_REF) + 0.65), (X_REF, zr(X_REF) + 0.73)],
+                         fc="#888", ec="k"))
+    def ch(a, b, z, t):
+        ax.annotate("", (a, z), (b, z), arrowprops=dict(arrowstyle="<->", lw=0.8))
+        ax.text((a + b) / 2, z - 0.05, t, ha="center", va="top", fontsize=8.5, bbox=dict(fc="white", ec="none", pad=0.3))
+    ch(0, X_REF, 2.42, "X = muro → eje ducto\n(MEDIR EN OBRA)")
+    ch(X_REF + d / 2, yb, 2.42, f"{BAJO_DUCTO / 10:.0f} cm")
+    notas = [((0.004, zr(0) + 0.03), (-0.25, 2.18), f"pestaña {DOBLEZ / 10:.0f} cm sube por\nel muro BAJO el forro"),
+             ((0.12, zr(0.12) + 0.03), (0.35, 3.08), "forro de atraque (existente en\nel proyecto, DET. 3) va ENCIMA"),
+             ((0.45, zr(0.45) + 0.006), (0.55, 2.62), "BASE (este escantillón):\nnace en el muro, va bajo el forro\ny SOBRE la plancha hacia abajo"),
+             ((X_REF + d / 2, zr(X_REF) + 0.06), (1.15, 3.00), "collarín remachado y\nsellado a la base"),
+             ((yb, zr(yb) + 0.006), (1.20, 2.62), "borde bajo SOBRE la plancha:\nel agua escurre hacia afuera"),
+             ((1.1, zr(1.1)), (1.25, 2.30), "plancha trapezoidal")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=8, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
+                    bbox=dict(fc="white", ec="none", pad=0.5), zorder=9)
+    ax.set_xlim(-0.55, 1.45); ax.set_ylim(2.05, 3.25)
+    ax.set_title("CORTE · orden de las piezas (de arriba hacia abajo: forro → base → plancha)", fontsize=10.5, weight="bold")
+
+    # ---- PLANTA DE LA BASE (desarrollo, escala referencial) ----
+    ax = fig.add_axes([0.60, 0.08, 0.38, 0.82]); ax.set_aspect("equal"); ax.axis("off")
+    Lb = largo_base(X_REF, D); W = ANCHO_BASE
+    ax.add_patch(Rectangle((0, -DOBLEZ), W, DOBLEZ, fc="#d6eaf8", ec="#2c7fb8", lw=1.2, ls="--"))
+    ax.add_patch(Rectangle((0, 0), W, Lb, fc="#d6eaf8", ec="#2c7fb8", lw=2))
+    yc = (X_REF * 1000) / math.cos(ALFA)
+    ax.add_patch(Ellipse((W / 2, yc), D + 2, D / math.cos(ALFA) + 2, fc="white", ec="k", lw=1.5))
+    ax.text(W / 2, -DOBLEZ / 2, f"pestaña {DOBLEZ} mm (doblar 90° hacia arriba, contra el muro)", ha="center", va="center", fontsize=8)
+    ax.text(W / 2, Lb - 60, "borde bajo: queda SOBRE la plancha", ha="center", fontsize=8.5)
+    ax.text(W / 2, yc - D / 2 - 40, "agujero elíptico\n(ver hoja 1:1 del diámetro)", ha="center", fontsize=8)
+    def dv(x, a, b, t):
+        ax.annotate("", (x, a), (x, b), arrowprops=dict(arrowstyle="<->", lw=0.8))
+        ax.text(x - 12, (a + b) / 2, t, rotation=90, ha="right", va="center", fontsize=8.5, bbox=dict(fc="white", ec="none", pad=0.3))
+    dv(-30, 0, yc, "X / 0,993")
+    dv(-80, 0, Lb, f"LARGO = X/0,993 + D/2/0,993 + {BAJO_DUCTO}")
+    ax.annotate("", (0, Lb + 40), (W, Lb + 40), arrowprops=dict(arrowstyle="<->", lw=0.8))
+    ax.text(W / 2, Lb + 55, f"ANCHO ≈ {W} mm: de cresta a cresta de la plancha (ajustar a la onda)", ha="center", va="top",
+            fontsize=8.5)
+    ax.text(W + 20, 0, "MURO\n(arriba)", fontsize=8.5, weight="bold", va="center")
+    ax.text(W + 20, Lb, "ALERO\n(abajo)", fontsize=8.5, weight="bold", va="center")
+    ax.set_xlim(-200, W + 140); ax.set_ylim(Lb + 160, -DOBLEZ - 120)
+    ax.set_title("BASE DESPLEGADA (vista desde arriba)", fontsize=10.5, weight="bold")
+
+    # ---- tabla ----
+    ax = fig.add_axes([0.04, 0.06, 0.52, 0.28]); ax.axis("off")
+    filas = []
+    for X in (0.50, 0.60, 0.75, 1.00):
+        filas.append([f"{X:.2f}"] + [f"{largo_base(X, D) + DOBLEZ:.0f}" for D in DIAMETROS])
+    t = ax.table(cellText=filas, colLabels=["X (m)"] + [f"Ø {D}" for D in DIAMETROS], loc="upper center", cellLoc="center")
+    t.auto_set_font_size(False); t.set_fontsize(9.5); t.scale(1, 1.6)
+    ax.set_title("LARGO TOTAL DE LA BASE en mm (incluye pestaña de 5 cm), según X y diámetro", fontsize=10, weight="bold")
+    ax.text(0, 0.12, ("Material: zincalum liso 0,4 mm (de las planchas lisas de la hojalatería). Bordes laterales sobre crestas,\n"
+                      "sellados con cinta butílica. Si me das X y el diámetro reales, genero la hoja 1:1 exacta."),
+            fontsize=9, va="top", transform=ax.transAxes)
+    fig.savefig(OUT + "12b_base_ducto_calefon.png", dpi=110)
+    return fig
+
 if __name__ == "__main__":
     fig = lamina_explicativa()
+    fig2 = lamina_base()
     with PdfPages(OUT + "escantillon_ducto_calefon.pdf") as pdf:
-        pdf.savefig(fig); plt.close(fig)
+        pdf.savefig(fig); pdf.savefig(fig2); plt.close("all")
         for D in DIAMETROS:
             pagina_escantillon(pdf, D)
-    print("ok", math.degrees(ALFA))

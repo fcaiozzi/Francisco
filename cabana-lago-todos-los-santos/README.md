@@ -22,7 +22,8 @@ Bodega de 3,50 × 2,50 m + terraza techada de 4,75 m, adosadas a la casa existen
 | `12_ducto_calefon.png` | Lámina 12: paso del ducto del calefón por el techo |
 | `12b_base_ducto_calefon.png` | Lámina 12b: base del ducto que nace en el muro, bajo el forro de atraque |
 | `12c_ducto_calefon_obra.png` | Lámina 12c: ducto con medidas de obra (2 cm al muro, alero existente 34 cm) |
-| `escantillon_ducto_calefon.pdf` | Escantillón 1:1 (A3) del collarín y agujero del ducto, Ø 80/100/110/125 |
+| `12d_angulo_ducto.png` | Lámina 12d: ángulo techo/ducto 5" (83,3° y 96,7°) |
+| `escantillon_ducto_calefon.pdf` | Escantillón 1:1 (A3) del collarín y agujero del ducto, ducto 5" (127 mm), falsa escuadra |
 | `generar_planos.py` | Programa que dibuja las láminas y el PDF |
 | `generar_planilla.py` | Programa que arma la planilla Excel |
 

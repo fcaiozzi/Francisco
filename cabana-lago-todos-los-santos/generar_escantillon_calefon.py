@@ -9,7 +9,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 OUT = os.path.dirname(os.path.abspath(__file__)) + "/"
 PEND = (2.63 - 2.34) / 2.48            # pendiente del techo nuevo
 ALFA = math.atan(PEND)                 # 6,7°
-DIAMETROS = [80, 100, 110, 125]        # mm, diámetros usuales de ducto de calefón
+DIAMETROS = [127]                      # mm, ducto de 5" (medido en obra)
 H_COLLAR = 80                          # alto del collarín (mm)
 MM = 1 / 25.4
 
@@ -29,7 +29,7 @@ def pagina_escantillon(pdf, D):
     ax.text(120, 264, "← debe medir exactamente 100 mm", fontsize=8)
 
     # --- 1) Collarín (desarrollo del cilindro cortado al ángulo del techo) ---
-    x0, y0 = 12, 142
+    x0, y0 = 4, 142
     tr = 10                                # traslapo para remachar
     n = 200
     xs = [x0 + per * i / n for i in range(n + 1)]
@@ -143,7 +143,7 @@ def lamina_explicativa():
         f"  (hacia la casa) y {90 + math.degrees(ALFA):.1f}° por el lado bajo (hacia el alero).\n"
         "• Escantillón 1:1 imprimible: archivo escantillon_ducto_calefon.pdf\n"
         "  (una hoja A3 por diámetro: 80, 100, 110 y 125 mm).\n"
-        "• Medir el diámetro real del ducto y usar esa hoja.\n"
+        "• Ver lámina 12d: detalle del ángulo y falsa escuadra 1:1.\n"
         "• Confirmar con instalador SEC altura de salida y distancias."),
         fontsize=9.5, va="top", linespacing=1.5)
     fig.savefig(OUT + "12_ducto_calefon.png", dpi=110)
@@ -243,7 +243,7 @@ def lamina_base():
     return fig
 
 # ---------------- ESCANTILLÓN DEFINITIVO con medidas de obra ----------------
-D_OBRA = 100          # mm (supuesto: confirmar diámetro real)
+D_OBRA = 127          # mm = 5" (confirmado)
 SEP_MURO = 340        # mm, del muro a la cara del ducto = justo topando el tapacán del alero existente (34 cm)
 X_OBRA = (SEP_MURO + D_OBRA / 2) / 1000   # m, muro → eje
 ALERO_EX = 0.34       # m, salida del alero existente (medido)
@@ -256,7 +256,7 @@ LARGO_OBRA = (SEP_MURO + D_OBRA) / math.cos(ALFA) + BAJO_OBRA   # mm sobre la pe
 def lamina_obra():
     fig = plt.figure(figsize=(16.5, 11.7))
     fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16, weight="bold")
-    fig.text(0.04, 0.92, f"Lámina 12c: DUCTO CALEFÓN · le hace el quite al alero: sube topando el tapacán (cara a {SEP_MURO / 10:.0f} cm del muro) · Ø {D_OBRA} mm (confirmar)",
+    fig.text(0.04, 0.92, f"Lámina 12c: DUCTO CALEFÓN · le hace el quite al alero: sube topando el tapacán (cara a {SEP_MURO / 10:.0f} cm del muro) · Ø 5\" ({D_OBRA} mm)",
              fontsize=10, color="#444")
     # ---- CORTE ----
     ax = fig.add_axes([0.02, 0.07, 0.50, 0.82]); ax.set_aspect("equal"); ax.axis("off")
@@ -336,7 +336,7 @@ def lamina_obra():
         "• En el techo nuevo el ducto cae a 34–44 cm del muro: CHOCA con la costanera de 45 cm.\n"
         "  Cortarla y apoyar sus extremos en un trozo 2x2 a cada lado (dejar ≥ 5 cm al ducto).\n"
         "  Ubicar el ducto ENTRE dos tijerales (quedan 55 cm libres entre ellos).\n"
-        "• Diámetro supuesto Ø 100 mm: CONFIRMAR antes de cortar."),
+        "• Ducto Ø 5\" (127 mm)."),
         fontsize=9, va="top", linespacing=1.45)
     fig.savefig(OUT + "12c_ducto_calefon_obra.png", dpi=110)
     return fig
@@ -367,19 +367,124 @@ def pagina_obra_1a1(pdf):
     ax.plot([cx - 80, cx + 80], [yc, yc], color="#2c7fb8", lw=0.7, ls="-.")
     ax.text(cx + 3, 24, "eje (centro de la base)", fontsize=7.5, color="#2c7fb8")
     ax.text(cx - 93, 25, "↓ hacia el alero (la base sigue\n   hasta completar el largo)", fontsize=7.5)
-    ax.text(240, 200, ("COLLARÍN: usar la hoja 1:1 'Ø 100 mm' de este mismo PDF\n"
-                       "(desarrollo 314 mm + 10 de traslapo, curva de 11,7 mm).\n\n"
+    ax.text(240, 200, (f"COLLARÍN: usar la hoja 1:1 'Ø {D_OBRA} mm' de este mismo PDF\n"
+                       f"(desarrollo {math.pi * D_OBRA:.0f} mm + 10 de traslapo, curva de {D_OBRA * math.tan(ALFA):.1f} mm).\n\n"
                        "Collarín remachado y sellado a la base.\n\n"
                        f"Base completa: {ANCHO_OBRA} x {LARGO_OBRA + SUBIDA:.0f} mm\n"
                        f"(pestaña {SUBIDA} + {LARGO_OBRA:.0f} sobre el techo)."),
             fontsize=9, va="top", linespacing=1.5)
     pdf.savefig(fig); plt.close(fig)
 
+
+# ---------------- DETALLE DEL ÁNGULO TECHO / DUCTO ----------------
+def lamina_angulo():
+    fig = plt.figure(figsize=(16.5, 11.7))
+    fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16, weight="bold")
+    fig.text(0.04, 0.92, f"Lámina 12d: ÁNGULO ENTRE EL TECHO Y EL DUCTO DE 5\" ({D_OBRA} mm) · techo {PEND * 100:.1f} %".replace(".", ","),
+             fontsize=10, color="#444")
+    a = math.degrees(ALFA); D = D_OBRA; r = D / 2; dz = D * math.tan(ALFA)
+    # ---- corte ampliado por el eje del ducto (mm) ----
+    ax = fig.add_axes([0.03, 0.10, 0.55, 0.78]); ax.set_aspect("equal"); ax.axis("off")
+    zr = lambda x: -PEND * x                          # techo: sube hacia la izquierda (casa)
+    ax.plot([-260, 260], [zr(-260), zr(260)], color="#555", lw=5)
+    ax.text(-250, zr(-250) + 18, "← CASA (sube)", fontsize=10, weight="bold")
+    ax.text(150, zr(150) - 30, "ALERO (baja) →", fontsize=10, weight="bold")
+    ax.add_patch(Rectangle((-r, -160), D, 420, fc="#d0d0d0", ec="k", lw=1.5, zorder=2))
+    ax.plot([0, 0], [-170, 270], color="#2c7fb8", lw=0.8, ls="-.")
+    # collarín
+    hc = 80
+    ax.add_patch(Polygon([(-r - 3, zr(-r)), (r + 3, zr(r)), (r + 3, zr(-r) + hc), (-r - 3, zr(-r) + hc)],
+                         fc="#7d8a91", ec="k", lw=1.2, zorder=3, alpha=0.9))
+    # arcos de ángulo
+    from matplotlib.patches import Arc
+    R = 70
+    ax.add_patch(Arc((-r, zr(-r)), 2 * R, 2 * R, theta1=90, theta2=180 - a, color="#c0392b", lw=1.8, zorder=5))
+    ax.text(-r - 75, zr(-r) + 55, f"{90 - a:.1f}°", fontsize=15, weight="bold", color="#c0392b", zorder=6)
+    ax.add_patch(Arc((r, zr(r)), 2 * R, 2 * R, theta1=-a, theta2=90, color="#c0392b", lw=1.8, zorder=5))
+    ax.text(r + 30, zr(r) + 55, f"{90 + a:.1f}°", fontsize=15, weight="bold", color="#c0392b", zorder=6)
+    # ángulo del techo con la horizontal
+    ax.plot([60, 230], [zr(60), zr(60)], color="#2c7fb8", lw=1, ls="--")
+    ax.add_patch(Arc((60, zr(60)), 300, 300, theta1=-a, theta2=0, color="#2c7fb8", lw=1.5))
+    ax.text(215, zr(60) + 4, f"{a:.1f}° (techo)", fontsize=10, color="#2c7fb8", weight="bold")
+    # diferencia de altura del corte
+    ax.annotate("", (r + 25, zr(-r)), (r + 25, zr(r)), arrowprops=dict(arrowstyle="<->", lw=0.9))
+    ax.plot([-r, r + 30], [zr(-r), zr(-r)], color="k", lw=0.6, ls=":")
+    ax.text(r + 30, (zr(-r) + zr(r)) / 2 - 2, f"{dz:.1f} mm", fontsize=10, weight="bold")
+    ax.annotate("", (-r, -185), (r, -185), arrowprops=dict(arrowstyle="<->", lw=0.9))
+    ax.text(0, -205, f"Ø {D} mm (5\")", ha="center", fontsize=10, weight="bold")
+    ax.annotate(f"collarín {hc} mm de alto", (-r, zr(-r) + hc * 0.8), (-200, 170), fontsize=9, ha="center", arrowprops=dict(arrowstyle="-", lw=0.6))
+    ax.text(0, 200, "DUCTO\n(vertical)", ha="center", fontsize=10, weight="bold", zorder=4,
+            bbox=dict(fc="white", ec="none"))
+    ax.text(-250, -120, "plancha / base de zincalum", fontsize=9, color="#555")
+    ax.set_xlim(-300, 320); ax.set_ylim(-230, 290)
+    ax.set_title("CORTE POR EL EJE DEL DUCTO (ampliado, medidas en mm)", fontsize=11, weight="bold")
+    # ---- tabla de medidas ----
+    ax = fig.add_axes([0.60, 0.50, 0.38, 0.38]); ax.axis("off")
+    filas = [["Ángulo del techo con la horizontal", f"{a:.1f}°  (pendiente {PEND * 100:.1f} %)"],
+             ["Ducto / techo, lado CASA (arriba)", f"{90 - a:.1f}°"],
+             ["Ducto / techo, lado ALERO (abajo)", f"{90 + a:.1f}°"],
+             ["Diámetro ducto", f"5\" = {D} mm"],
+             ["Desarrollo del collarín", f"{math.pi * D:.0f} mm + 10 de traslapo"],
+             ["Diferencia de alto del corte", f"{dz:.1f} mm (más largo al lado alero)"],
+             ["Agujero en la base (elipse)", f"{D / math.cos(ALFA) + 2:.1f} x {D + 2} mm"],
+             ["Falsa escuadra (cateto 300 mm)", f"subir {300 * PEND:.1f} mm"]]
+    t = ax.table(cellText=filas, colLabels=["Dato", "Valor"], loc="upper center", cellLoc="left", colWidths=[0.55, 0.45])
+    t.auto_set_font_size(False); t.set_fontsize(10); t.scale(1, 1.7)
+    ax.set_title("DATOS PARA LA CONFECCIÓN", fontsize=11, weight="bold")
+    ax = fig.add_axes([0.60, 0.10, 0.38, 0.36]); ax.axis("off")
+    ax.text(0, 1, "CÓMO SE USA", fontsize=11, weight="bold", va="top")
+    ax.text(0, 0.88, (
+        f"1. Con la falsa escuadra (hoja 1:1 del PDF) o con una regla: en 300 mm\n"
+        f"   de largo el techo sube {300 * PEND:.0f} mm → ese es el ángulo de {a:.1f}°.\n"
+        f"2. El collarín se corta con la hoja 1:1 del ducto de 5\": la curva\n"
+        f"   de abajo sube y baja {dz / 2:.1f} mm a cada lado del promedio.\n"
+        f"3. Al enrollarlo, el lado más corto va hacia la CASA ({90 - a:.1f}°)\n"
+        f"   y el más largo hacia el ALERO ({90 + a:.1f}°).\n"
+        "4. Comprobar en obra apoyando la falsa escuadra en la plancha\n"
+        "   y el nivel/plomada en el ducto."),
+        fontsize=10, va="top", linespacing=1.5)
+    fig.savefig(OUT + "12d_angulo_ducto.png", dpi=110)
+    return fig
+
+def pagina_falsa_escuadra(pdf):
+    W, H = 420, 297
+    fig = plt.figure(figsize=(W * MM, H * MM))
+    ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, W); ax.set_ylim(0, H); ax.axis("off")
+    a = math.degrees(ALFA)
+    ax.text(15, 282, f"FALSA ESCUADRA 1:1 · ángulo del techo {a:.1f}° · ducto / techo {90 - a:.1f}° y {90 + a:.1f}°".replace(".", ","),
+            fontsize=12, weight="bold")
+    ax.text(15, 274, "Imprimir A3 al 100 %. Verificar la regla (100 mm). Recortar por las líneas gruesas.", fontsize=8.5, color="#c0392b")
+    ax.plot([15, 115], [266, 266], color="k", lw=1.5)
+    for k in range(0, 101, 10):
+        ax.plot([15 + k, 15 + k], [266, 269 if k % 50 else 271], color="k", lw=0.8)
+    # plantilla A: ángulo del techo (triángulo 300 mm)
+    x0, y0, Lt = 20, 175, 300
+    ax.add_patch(Polygon([(x0, y0), (x0 + Lt, y0), (x0 + Lt, y0 + Lt * PEND)], fill=False, ec="k", lw=2))
+    ax.text(x0 + Lt / 2, y0 - 8, f"{Lt} mm (horizontal)", ha="center", fontsize=9)
+    ax.text(x0 + Lt + 4, y0 + Lt * PEND / 2, f"{Lt * PEND:.1f} mm", va="center", fontsize=9)
+    ax.text(x0 + 45, y0 + 4, f"{a:.1f}°", fontsize=11, weight="bold", color="#c0392b")
+    ax.text(x0, y0 + 50, "A · ÁNGULO DEL TECHO (apoyar la hipotenusa en la plancha)", fontsize=9, weight="bold")
+    # plantilla B: ducto / techo
+    bx, by = 170, 55
+    ax.plot([bx, bx], [by, by + 70], color="k", lw=2.2)
+    ax.plot([bx - 150, bx + 200], [by + 150 * PEND, by - 200 * PEND], color="k", lw=2.2)
+    from matplotlib.patches import Arc
+    ax.add_patch(Arc((bx, by), 70, 70, theta1=90, theta2=180 - a, color="#c0392b", lw=1.5))
+    ax.add_patch(Arc((bx, by), 70, 70, theta1=-a, theta2=90, color="#c0392b", lw=1.5))
+    ax.text(bx - 60, by + 32, f"{90 - a:.1f}°\nlado CASA", fontsize=11, weight="bold", color="#c0392b", ha="center")
+    ax.text(bx + 55, by + 32, f"{90 + a:.1f}°\nlado ALERO", fontsize=11, weight="bold", color="#c0392b", ha="center")
+    ax.text(bx + 4, by + 64, "ducto (vertical)", fontsize=9)
+    ax.text(bx + 150, by - 150 * PEND + 6, "techo", fontsize=9)
+    ax.text(15, 135, "B · ÁNGULOS DUCTO / TECHO (para el collarín y la base)", fontsize=9, weight="bold")
+    pdf.savefig(fig); plt.close(fig)
+
 if __name__ == "__main__":
     fig3 = lamina_obra()
     with PdfPages(OUT + "escantillon_ducto_calefon.pdf") as pdf:
         pdf.savefig(lamina_explicativa()); pdf.savefig(lamina_base()); pdf.savefig(fig3)
+        pdf.savefig(lamina_angulo())
         pagina_obra_1a1(pdf)
+        pagina_falsa_escuadra(pdf)
         plt.close("all")
         for D in DIAMETROS:
             pagina_escantillon(pdf, D)

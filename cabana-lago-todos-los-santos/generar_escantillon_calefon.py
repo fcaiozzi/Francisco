@@ -293,11 +293,31 @@ def lamina_obra():
     r_ = d / 2; k = math.sqrt(2)
     ax.add_patch(Rectangle((0.005, z_cal - 0.60), 0.36, 0.60, fc="white", ec="k", lw=1.5, zorder=3))
     ax.text(0.185, z_cal - 0.30, "CALEFÓN", ha="center", fontsize=9, weight="bold", zorder=4)
-    ax.add_patch(Rectangle((c0 - r_, z_cal), d, z1 - z_cal, fc="#bbb", ec="k", zorder=3))
-    ax.add_patch(Polygon([(c0 - r_ * k, z1), (c0 + r_ * k, z1), (c1 + r_ * k, z2), (c1 - r_ * k, z2)], fc="#bbb", ec="k", zorder=3))
-    ax.add_patch(Rectangle((c1 - r_, z2), d, 3.55 - z2, fc="#bbb", ec="k", zorder=3))
-    for (cx_, cz_) in ((c0, z1), (c1, z2)):
-        ax.add_patch(Ellipse((cx_, cz_), 0.05, 0.05, fc="#c0392b", ec="k", zorder=6))
+    def tubo(pts, fc, z=3):
+        """Dibuja un tubo de diámetro d (ancho perpendicular constante) a lo largo de la polilínea pts, con uniones a inglete."""
+        def nrm(p, q):
+            dx, dz_ = q[0] - p[0], q[1] - p[1]; L_ = math.hypot(dx, dz_)
+            return (-dz_ / L_, dx / L_)
+        izq, der = [], []
+        for i_, p_ in enumerate(pts):
+            if i_ == 0:
+                n = nrm(pts[0], pts[1]); m = 1.0
+            elif i_ == len(pts) - 1:
+                n = nrm(pts[-2], pts[-1]); m = 1.0
+            else:
+                n1, n2 = nrm(pts[i_ - 1], p_), nrm(p_, pts[i_ + 1])
+                n = (n1[0] + n2[0], n1[1] + n2[1]); Ln = math.hypot(*n); n = (n[0] / Ln, n[1] / Ln)
+                m = 1 / (n[0] * n1[0] + n[1] * n1[1])         # inglete
+            izq.append((p_[0] + n[0] * r_ * m, p_[1] + n[1] * r_ * m))
+            der.append((p_[0] - n[0] * r_ * m, p_[1] - n[1] * r_ * m))
+        ax.add_patch(Polygon(izq + der[::-1], fc=fc, ec="k", lw=1.2, zorder=z))
+    eje = [(c0, z_cal), (c0, z1), (c1, z2), (c1, 3.55)]
+    tubo(eje, "#bbb")
+    # codos de 45° (mismo diámetro): un trozo antes y después de cada quiebre
+    LC = 0.07
+    u = (1 / k, 1 / k)                                    # dirección del tramo diagonal
+    tubo([(c0, z1 - LC), (c0, z1), (c0 + u[0] * LC, z1 + u[1] * LC)], "#e07b6a", 4)
+    tubo([(c1 - u[0] * LC, z2 - u[1] * LC), (c1, z2), (c1, z2 + LC)], "#e07b6a", 4)
     ax.plot([c0, c0, c1, c1], [z_cal, z1, z2, 3.5], color="#2c7fb8", lw=0.8, ls="-.", zorder=7)
     def cv(x, za, zb, t, lado=1):
         ax.annotate("", (x, za), (x, zb), arrowprops=dict(arrowstyle="<->", lw=0.8), zorder=8)
@@ -312,7 +332,7 @@ def lamina_obra():
     ax.annotate("", (0, z_cal + 0.04), (SEP_ACTUAL / 1000, z_cal + 0.04), arrowprops=dict(arrowstyle="<->", lw=0.8))
     ax.text(-0.02, z_cal + 0.04, f"{SEP_ACTUAL / 10:.0f} cm (ducto ACTUAL)", ha="right", va="center", fontsize=8.5, weight="bold",
             bbox=dict(fc="white", ec="none", pad=0.3))
-    ax.text((c0 + c1) / 2 + 0.07, (z1 + z2) / 2 - 0.03, f"tramo a 45°\n{(c1 - c0) * k * 100:.0f} cm (eje)", fontsize=8,
+    ax.text((c0 + c1) / 2 + 0.10, (z1 + z2) / 2 - 0.06, f"tramo a 45°\n{(c1 - c0) * k * 100:.0f} cm (eje)", fontsize=8,
             rotation=45, ha="center", va="center", zorder=8)
     ax.add_patch(Polygon([(xa - 0.05, 3.55), (xa + d + 0.05, 3.55), (xa + d / 2, 3.63)], fc="#888", ec="k", zorder=3))
     ax.add_patch(Rectangle((xa - 0.006, zp(xa + d)), d + 0.012, 0.10, fc="#7d8a91", ec="k", zorder=6))
@@ -323,8 +343,9 @@ def lamina_obra():
     ch(0, xa, z2 + 0.08, f"{SEP_MURO / 10:.0f} cm a la cara del ducto (NUEVO)", dy=0.03)
     notas = [((ALERO_EX, z_sof + 0.11), (0.65, 3.35), "tapacán 10 cm"),
              ((xa, z_sof + 0.12), (0.75, 3.20), "sube TOPANDO el tapacán:\nle hace el quite al alero"),
-             ((c0, z1), (-0.35, z1 + 0.05), "CODO 45° (1)"),
-             ((c1, z2), (-0.35, z2 + 0.12), "CODO 45° (2)\n2 codos de 45° para separarse\ndel muro (de 2 a 34 cm)"),
+             ((c0 - r_, z1), (-0.35, z1 + 0.05), "CODO 45° (1)\nsale del ducto vertical\ndel calefón"),
+             ((c1 - r_, z2 + 0.03), (-0.35, z2 + 0.15), "CODO 45° (2)\nsale del tramo diagonal\ny vuelve a vertical"),
+             ((0.45, (z1 + z2) / 2), (0.95, z_cal - 0.25), "2 codos de 45°, mismo Ø 5\"\npara separarse del muro\n(de 2 a 34 cm)"),
              ((0.004, zp(0) + 0.08), (-0.45, 2.85), f"base: sube {SUBIDA / 10:.0f} cm por el\nmuro BAJO el forro de atraque"),
              ((0.35, zp(0.35) + 0.006), (0.65, 2.55), "base sobre la plancha\nhacia abajo"),
              ((xa + d, zp(xa + d) + 0.05), (0.7, 2.80), "collarín 83,3° / 96,7°")]

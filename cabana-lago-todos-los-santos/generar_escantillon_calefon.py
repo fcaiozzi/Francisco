@@ -244,6 +244,9 @@ def lamina_base():
 
 # ---------------- ESCANTILLÓN DEFINITIVO con medidas de obra ----------------
 D_OBRA = 127          # mm = 5" (confirmado)
+SEP_ACTUAL = 20       # mm, ducto ACTUAL: cara a 2 cm del muro
+DIST_CAL_TECHO = 780  # mm, parte superior del calefón → cara inferior del techo nuevo
+TRAMO_1 = 150         # mm, tramo recto sobre el calefón antes del 1er codo
 SEP_MURO = 340        # mm, del muro a la cara del ducto = justo topando el tapacán del alero existente (34 cm)
 X_OBRA = (SEP_MURO + D_OBRA / 2) / 1000   # m, muro → eje
 ALERO_EX = 0.34       # m, salida del alero existente (medido)
@@ -262,7 +265,7 @@ def lamina_obra():
     ax = fig.add_axes([0.02, 0.07, 0.50, 0.82]); ax.set_aspect("equal"); ax.axis("off")
     zp = lambda y: 2.63 + 0.165 / math.cos(ALFA) + 0.045 - PEND * y      # cara superior plancha nueva
     z_sof = 3.03                                                         # bajo alero existente en el muro
-    ax.add_patch(Rectangle((-0.35, 2.2), 0.35, z_sof - 2.2, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.add_patch(Rectangle((-0.35, 1.15), 0.35, z_sof - 1.15, fc="#e6e6e6", ec="k", hatch="//"))
     ax.text(-0.17, 2.5, "MURO\nCABAÑA", ha="center", fontsize=8, weight="bold", bbox=dict(fc="white", ec="none"))
     # alero existente (como el croquis)
     ax.add_patch(Polygon([(-0.6, z_sof - 0.05), (ALERO_EX, z_sof + 0.06), (ALERO_EX, z_sof + 0.06 + TAPACAN_EX),
@@ -280,29 +283,56 @@ def lamina_obra():
             zp(0.22) + 0.03, zp(0.22) + 0.012], color="#5f6b73", lw=4, zorder=5)
     # ducto
     d = D_OBRA / 1000; xa = SEP_MURO / 1000
-    ax.add_patch(Rectangle((0.03, 1.35), 0.30, 0.55, fc="white", ec="k", lw=1.5, zorder=3))
-    ax.text(0.18, 1.62, "CALEFÓN", ha="center", fontsize=8, weight="bold", zorder=4)
-    ax.add_patch(Polygon([(0.13, 1.90), (0.13 + d, 1.90), (0.13 + d, 2.00), (xa + d, 2.30), (xa, 2.30), (0.13, 2.00)],
-                         fc="#bbb", ec="k", zorder=3))
-    ax.add_patch(Rectangle((xa, 2.30), d, 1.25, fc="#bbb", ec="k", zorder=3))
+    # --- a escala: calefón y desvío con 2 codos de 45° ---
+    c0 = (SEP_ACTUAL + D_OBRA / 2) / 1000            # eje actual (cara a 2 cm del muro)
+    c1 = xa + d / 2                                  # eje nuevo (cara a 34 cm, topando tapacán)
+    z_inf = 2.63 - PEND * c1                         # cara inferior del tijeral en el eje del ducto
+    z_cal = z_inf - DIST_CAL_TECHO / 1000            # parte superior del calefón
+    z1 = z_cal + TRAMO_1 / 1000                      # 1er codo 45°
+    z2 = z1 + (c1 - c0)                              # 2º codo 45° (desvío a 45°: sube lo mismo que se corre)
+    r_ = d / 2; k = math.sqrt(2)
+    ax.add_patch(Rectangle((0.005, z_cal - 0.60), 0.36, 0.60, fc="white", ec="k", lw=1.5, zorder=3))
+    ax.text(0.185, z_cal - 0.30, "CALEFÓN", ha="center", fontsize=9, weight="bold", zorder=4)
+    ax.add_patch(Rectangle((c0 - r_, z_cal), d, z1 - z_cal, fc="#bbb", ec="k", zorder=3))
+    ax.add_patch(Polygon([(c0 - r_ * k, z1), (c0 + r_ * k, z1), (c1 + r_ * k, z2), (c1 - r_ * k, z2)], fc="#bbb", ec="k", zorder=3))
+    ax.add_patch(Rectangle((c1 - r_, z2), d, 3.55 - z2, fc="#bbb", ec="k", zorder=3))
+    for (cx_, cz_) in ((c0, z1), (c1, z2)):
+        ax.add_patch(Ellipse((cx_, cz_), 0.05, 0.05, fc="#c0392b", ec="k", zorder=6))
+    ax.plot([c0, c0, c1, c1], [z_cal, z1, z2, 3.5], color="#2c7fb8", lw=0.8, ls="-.", zorder=7)
+    def cv(x, za, zb, t, lado=1):
+        ax.annotate("", (x, za), (x, zb), arrowprops=dict(arrowstyle="<->", lw=0.8), zorder=8)
+        ax.text(x + 0.02 * lado, (za + zb) / 2, t, ha="left" if lado > 0 else "right", va="center", fontsize=8.5,
+                weight="bold", bbox=dict(fc="white", ec="none", pad=0.3), zorder=8)
+    cv(0.95, z_cal, z_inf, f"{DIST_CAL_TECHO / 10:.0f} cm\ncalefón → techo")
+    cv(0.80, z_cal, z1, f"{TRAMO_1 / 10:.0f} cm")
+    cv(0.80, z1, z2, f"{(c1 - c0) * 100:.0f} cm")
+    cv(0.80, z2, z_inf, f"{(z_inf - z2) * 100:.0f} cm")
+    ax.plot([c1, 1.0], [z_inf, z_inf], color="k", lw=0.5, ls=":"); ax.plot([0.36, 1.0], [z_cal, z_cal], color="k", lw=0.5, ls=":")
+    ax.plot([c0 + r_, 0.85], [z1, z1], color="k", lw=0.5, ls=":"); ax.plot([c1 + r_, 0.85], [z2, z2], color="k", lw=0.5, ls=":")
+    ax.annotate("", (0, z_cal + 0.04), (SEP_ACTUAL / 1000, z_cal + 0.04), arrowprops=dict(arrowstyle="<->", lw=0.8))
+    ax.text(-0.02, z_cal + 0.04, f"{SEP_ACTUAL / 10:.0f} cm (ducto ACTUAL)", ha="right", va="center", fontsize=8.5, weight="bold",
+            bbox=dict(fc="white", ec="none", pad=0.3))
+    ax.text((c0 + c1) / 2 + 0.07, (z1 + z2) / 2 - 0.03, f"tramo a 45°\n{(c1 - c0) * k * 100:.0f} cm (eje)", fontsize=8,
+            rotation=45, ha="center", va="center", zorder=8)
     ax.add_patch(Polygon([(xa - 0.05, 3.55), (xa + d + 0.05, 3.55), (xa + d / 2, 3.63)], fc="#888", ec="k", zorder=3))
     ax.add_patch(Rectangle((xa - 0.006, zp(xa + d)), d + 0.012, 0.10, fc="#7d8a91", ec="k", zorder=6))
     def ch(a, b, z, t, dy=0.03):
         ax.annotate("", (a, z), (b, z), arrowprops=dict(arrowstyle="<->", lw=0.8))
         ax.text((a + b) / 2, z + dy, t, ha="center", fontsize=8.5, weight="bold", bbox=dict(fc="white", ec="none", pad=0.3))
     ch(0, ALERO_EX, 3.42, "34 cm (alero existente)")
-    ch(0, xa, 2.20, f"{SEP_MURO / 10:.0f} cm a la cara del ducto", dy=-0.07)
+    ch(0, xa, z2 + 0.08, f"{SEP_MURO / 10:.0f} cm a la cara del ducto (NUEVO)", dy=0.03)
     notas = [((ALERO_EX, z_sof + 0.11), (0.65, 3.35), "tapacán 10 cm"),
              ((xa, z_sof + 0.12), (0.75, 3.20), "sube TOPANDO el tapacán:\nle hace el quite al alero"),
-             ((0.25, 2.12), (0.70, 2.05), "codos 45° para separarse\ndel muro hasta el tapacán"),
+             ((c0, z1), (-0.35, z1 + 0.05), "CODO 45° (1)"),
+             ((c1, z2), (-0.35, z2 + 0.12), "CODO 45° (2)\n2 codos de 45° para separarse\ndel muro (de 2 a 34 cm)"),
              ((0.004, zp(0) + 0.08), (-0.45, 2.85), f"base: sube {SUBIDA / 10:.0f} cm por el\nmuro BAJO el forro de atraque"),
              ((0.35, zp(0.35) + 0.006), (0.65, 2.55), "base sobre la plancha\nhacia abajo"),
              ((xa + d, zp(xa + d) + 0.05), (0.7, 2.80), "collarín 83,3° / 96,7°")]
     for p, t, tx in notas:
         ax.annotate(tx, p, t, fontsize=8, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
                     bbox=dict(fc="white", ec="none", pad=0.5), zorder=9)
-    ax.set_xlim(-0.65, 1.05); ax.set_ylim(1.25, 3.70)
-    ax.set_title("CORTE CON MEDIDAS DE OBRA", fontsize=11, weight="bold")
+    ax.set_xlim(-0.75, 1.25); ax.set_ylim(1.15, 3.70)
+    ax.set_title("CORTE A ESCALA CON MEDIDAS DE OBRA", fontsize=11, weight="bold")
     # ---- BASE desplegada con cotas ----
     ax = fig.add_axes([0.54, 0.30, 0.44, 0.60]); ax.set_aspect("equal"); ax.axis("off")
     W, Lb = ANCHO_OBRA, LARGO_OBRA

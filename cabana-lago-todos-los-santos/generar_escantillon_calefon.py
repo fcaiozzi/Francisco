@@ -242,10 +242,141 @@ def lamina_base():
     fig.savefig(OUT + "12b_base_ducto_calefon.png", dpi=110)
     return fig
 
+# ---------------- ESCANTILLÓN DEFINITIVO con medidas de obra ----------------
+D_OBRA = 100          # mm (supuesto: confirmar diámetro real)
+SEP_MURO = 20         # mm, del muro a la cara del ducto (medido)
+X_OBRA = (SEP_MURO + D_OBRA / 2) / 1000   # m, muro → eje
+ALERO_EX = 0.34       # m, salida del alero existente (medido)
+TAPACAN_EX = 0.10     # m, tapacán del alero existente (medido)
+SUBIDA = 120          # mm, pestaña que sube por el muro bajo el forro de atraque
+ANCHO_OBRA = 560      # mm, de cresta a cresta (ajustar a la onda real)
+BAJO_OBRA = 200       # mm bajo el ducto, sobre la plancha
+LARGO_OBRA = (SEP_MURO + D_OBRA) / math.cos(ALFA) + BAJO_OBRA   # mm sobre la pendiente (sin la pestaña)
+
+def lamina_obra():
+    fig = plt.figure(figsize=(16.5, 11.7))
+    fig.text(0.04, 0.95, "AMPLIACIÓN CABAÑA – LAGO TODOS LOS SANTOS", fontsize=16, weight="bold")
+    fig.text(0.04, 0.92, f"Lámina 12c: DUCTO CALEFÓN CON MEDIDAS DE OBRA · ducto a {SEP_MURO / 10:.0f} cm del muro · Ø {D_OBRA} mm (confirmar)",
+             fontsize=10, color="#444")
+    # ---- CORTE ----
+    ax = fig.add_axes([0.02, 0.07, 0.50, 0.82]); ax.set_aspect("equal"); ax.axis("off")
+    zp = lambda y: 2.63 + 0.165 / math.cos(ALFA) + 0.045 - PEND * y      # cara superior plancha nueva
+    z_sof = 3.03                                                         # bajo alero existente en el muro
+    ax.add_patch(Rectangle((-0.35, 2.2), 0.35, z_sof - 2.2, fc="#e6e6e6", ec="k", hatch="//"))
+    ax.text(-0.17, 2.5, "MURO\nCABAÑA", ha="center", fontsize=8, weight="bold", bbox=dict(fc="white", ec="none"))
+    # alero existente (como el croquis)
+    ax.add_patch(Polygon([(-0.6, z_sof - 0.05), (ALERO_EX, z_sof + 0.06), (ALERO_EX, z_sof + 0.06 + TAPACAN_EX),
+                          (-0.6, z_sof + 0.10)], fc="#cfcfcf", ec="k"))
+    ax.text(-0.35, z_sof + 0.15, "alero / techo EXISTENTE", fontsize=8)
+    # techo nuevo
+    ax.add_patch(Polygon([(0.019, zp(0.019) - 0.045 - 0.165), (0.9, zp(0.9) - 0.045 - 0.165), (0.9, zp(0.9) - 0.045), (0.019, zp(0.019) - 0.045)],
+                         fc="#e8c891", ec="k"))
+    ax.plot([0, 0.9], [zp(0), zp(0.9)], color="#555", lw=3)
+    # base (azul) con subida
+    yb = (SEP_MURO + D_OBRA) / 1000 + BAJO_OBRA / 1000
+    ax.plot([0.004, 0.004, yb], [zp(0) + SUBIDA / 1000, zp(0) + 0.005, zp(yb) + 0.005], color="#2c7fb8", lw=4, zorder=4)
+    # forro de atraque encima
+    ax.plot([-0.008, 0.0, 0.0, 0.22, 0.24], [zp(0) + SUBIDA / 1000 + 0.04, zp(0) + SUBIDA / 1000 + 0.04, zp(0) + 0.03,
+            zp(0.22) + 0.03, zp(0.22) + 0.012], color="#5f6b73", lw=4, zorder=5)
+    # ducto
+    d = D_OBRA / 1000; xa = SEP_MURO / 1000
+    ax.add_patch(Rectangle((xa, 2.25), d, 1.30, fc="#bbb", ec="k", zorder=3))
+    ax.add_patch(Polygon([(xa - 0.05, 3.55), (xa + d + 0.05, 3.55), (xa + d / 2, 3.63)], fc="#888", ec="k", zorder=3))
+    ax.add_patch(Rectangle((xa - 0.006, zp(xa + d)), d + 0.012, 0.10, fc="#7d8a91", ec="k", zorder=6))
+    def ch(a, b, z, t, dy=0.03):
+        ax.annotate("", (a, z), (b, z), arrowprops=dict(arrowstyle="<->", lw=0.8))
+        ax.text((a + b) / 2, z + dy, t, ha="center", fontsize=8.5, weight="bold", bbox=dict(fc="white", ec="none", pad=0.3))
+    ch(0, xa, 2.35, "2 cm")
+    ch(0, ALERO_EX, 3.42, "34 cm (alero existente)")
+    ch(0, xa + d / 2, 2.20, f"{X_OBRA * 100:.0f} cm al eje", dy=-0.06)
+    notas = [((ALERO_EX, z_sof + 0.11), (0.65, 3.35), "tapacán 10 cm"),
+             ((xa + d / 2, z_sof + 0.04), (0.62, 3.15), "pasa por el alero existente:\nlleva su PROPIO forro y\nel sombrerete va POR SOBRE el techo"),
+             ((0.004, zp(0) + 0.08), (-0.45, 2.85), f"base: sube {SUBIDA / 10:.0f} cm por el\nmuro BAJO el forro de atraque"),
+             ((0.35, zp(0.35) + 0.006), (0.65, 2.55), "base sobre la plancha\nhacia abajo"),
+             ((xa + d, zp(xa + d) + 0.05), (0.7, 2.80), "collarín 83,3° / 96,7°")]
+    for p, t, tx in notas:
+        ax.annotate(tx, p, t, fontsize=8, ha="center", va="center", arrowprops=dict(arrowstyle="-", lw=0.6),
+                    bbox=dict(fc="white", ec="none", pad=0.5), zorder=9)
+    ax.set_xlim(-0.65, 1.0); ax.set_ylim(2.05, 3.70)
+    ax.set_title("CORTE CON MEDIDAS DE OBRA", fontsize=11, weight="bold")
+    # ---- BASE desplegada con cotas ----
+    ax = fig.add_axes([0.54, 0.30, 0.44, 0.60]); ax.set_aspect("equal"); ax.axis("off")
+    W, Lb = ANCHO_OBRA, LARGO_OBRA
+    ax.add_patch(Rectangle((0, -SUBIDA), W, SUBIDA, fc="#d6eaf8", ec="#2c7fb8", lw=1.2, ls="--"))
+    ax.add_patch(Rectangle((0, 0), W, Lb, fc="#d6eaf8", ec="#2c7fb8", lw=2))
+    yc = (SEP_MURO + D_OBRA / 2) / math.cos(ALFA)
+    ax.add_patch(Ellipse((W / 2, yc), D_OBRA + 2, D_OBRA / math.cos(ALFA) + 2, fc="white", ec="k", lw=1.5))
+    ax.plot([-20, W + 20], [0, 0], color="#c0392b", lw=1, ls="-.")
+    ax.text(W + 25, 0, "línea de doblez\n(esquina muro)", fontsize=8, color="#c0392b", va="center")
+    ax.text(W / 2, -SUBIDA / 2, f"PESTAÑA {SUBIDA} mm · doblar 90° hacia arriba\n(sube por el muro bajo el forro de atraque)",
+            ha="center", va="center", fontsize=8)
+    def dv(x, a, b, t):
+        ax.annotate("", (x, a), (x, b), arrowprops=dict(arrowstyle="<->", lw=0.8))
+        ax.text(x - 8, (a + b) / 2, t, rotation=90, ha="right", va="center", fontsize=8.5, bbox=dict(fc="white", ec="none", pad=0.3))
+    dv(W / 2 - D_OBRA / 2 - 20, 0, yc - D_OBRA / 2 / math.cos(ALFA) - 1, f"{(SEP_MURO / math.cos(ALFA)) - 1:.0f}")
+    dv(-30, 0, yc, f"{yc:.0f} al centro")
+    dv(-90, -SUBIDA, Lb, f"LARGO TOTAL {Lb + SUBIDA:.0f} mm")
+    ax.annotate("", (0, Lb + 30), (W, Lb + 30), arrowprops=dict(arrowstyle="<->", lw=0.8))
+    ax.text(W / 2, Lb + 45, f"ANCHO {W} mm (de cresta a cresta; ajustar a la onda real) · agujero centrado", ha="center",
+            va="top", fontsize=8.5)
+    ax.text(W / 2, Lb - 40, "borde bajo SOBRE la plancha", ha="center", fontsize=8.5)
+    ax.set_xlim(-180, W + 140); ax.set_ylim(Lb + 120, -SUBIDA - 60)
+    ax.set_title("BASE DESPLEGADA · medidas en mm (vista desde arriba)", fontsize=10.5, weight="bold")
+    # ---- notas ----
+    ax = fig.add_axes([0.54, 0.04, 0.44, 0.24]); ax.axis("off")
+    ax.text(0, 1, "IMPORTANTE", fontsize=11, weight="bold", va="top", color="#c0392b")
+    ax.text(0, 0.86, (
+        "• Con el ducto a 2 cm del muro, la pestaña de la base, el collarín y el forro de atraque se\n"
+        "  juntan: el hojalatero debe hacer base + collarín en UNA pieza, y cortar el forro de atraque\n"
+        "  alrededor del ducto, montándolo sobre la pestaña de la base (traslapo ≥ 10 cm, sellado).\n"
+        "• El ducto queda BAJO el alero existente (34 cm): NO puede terminar ahí. Debe atravesar el\n"
+        "  alero con su propio forro y salir por sobre el techo existente (gases del calefón).\n"
+        "• 2 cm al muro de madera es poco: usar ducto doble pared o protección aislante. Confirmar\n"
+        "  con instalador SEC.  • Diámetro supuesto Ø 100 mm: CONFIRMAR antes de cortar."),
+        fontsize=9, va="top", linespacing=1.45)
+    fig.savefig(OUT + "12c_ducto_calefon_obra.png", dpi=110)
+    return fig
+
+def pagina_obra_1a1(pdf):
+    """Hoja A3 1:1: zona de la base con la línea de doblez y el agujero en su posición exacta + collarín."""
+    W, H = 420, 297
+    fig = plt.figure(figsize=(W * MM, H * MM))
+    ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, W); ax.set_ylim(0, H); ax.axis("off")
+    ax.text(15, 282, f"ESCANTILLÓN 1:1 DEFINITIVO · Ø {D_OBRA} mm · ducto a {SEP_MURO} mm del muro · techo {PEND * 100:.1f} %".replace(".", ","),
+            fontsize=12, weight="bold")
+    ax.text(15, 274, "Imprimir A3 al 100 %. Verificar la regla (100 mm). Esta hoja marca la línea de doblez y el agujero;"
+            " el resto de la base es un rectángulo (ver lámina 12c).", fontsize=8.5, color="#c0392b")
+    ax.plot([15, 115], [266, 266], color="k", lw=1.5)
+    for k in range(0, 101, 10):
+        ax.plot([15 + k, 15 + k], [266, 269 if k % 50 else 271], color="k", lw=0.8)
+    ax.text(120, 265, "← 100 mm", fontsize=8)
+    # zona de la base (eje del ducto en x = 110)
+    cx = 110; yd = 215                              # y de la línea de doblez (muro) en la hoja
+    yc = yd - (SEP_MURO + D_OBRA / 2) / math.cos(ALFA)
+    ax.add_patch(Rectangle((cx - 95, yd), 190, 40, fc="#eaf4fb", ec="#2c7fb8", ls="--"))
+    ax.text(cx, yd + 20, f"pestaña (sigue hasta {SUBIDA} mm)", ha="center", fontsize=8)
+    ax.plot([cx - 100, cx + 100], [yd, yd], color="#c0392b", lw=1.5, ls="-.")
+    ax.text(cx + 102, yd, "DOBLEZ (muro)", fontsize=8, color="#c0392b", va="center")
+    ax.add_patch(Rectangle((cx - 95, 20), 190, yd - 20, fill=False, ec="#2c7fb8", lw=1))
+    ax.add_patch(Ellipse((cx, yc), D_OBRA + 2, D_OBRA / math.cos(ALFA) + 2, fill=False, ec="k", lw=1.8))
+    ax.plot([cx, cx], [20, yd + 40], color="#2c7fb8", lw=0.7, ls="-.")
+    ax.text(cx + 3, 24, "eje (centro de la base)", fontsize=7.5, color="#2c7fb8")
+    ax.text(cx - 93, 25, "↓ hacia el alero (la base sigue\n   hasta completar el largo)", fontsize=7.5)
+    ax.text(240, 200, ("COLLARÍN: usar la hoja 1:1 'Ø 100 mm' de este mismo PDF\n"
+                       "(desarrollo 314 mm + 10 de traslapo, curva de 11,7 mm).\n\n"
+                       "Con el ducto a 2 cm del muro, base y collarín\n"
+                       "se hacen en UNA pieza (remachada y sellada).\n\n"
+                       f"Base completa: {ANCHO_OBRA} x {LARGO_OBRA + SUBIDA:.0f} mm\n"
+                       f"(pestaña {SUBIDA} + {LARGO_OBRA:.0f} sobre el techo)."),
+            fontsize=9, va="top", linespacing=1.5)
+    pdf.savefig(fig); plt.close(fig)
+
 if __name__ == "__main__":
-    fig = lamina_explicativa()
-    fig2 = lamina_base()
+    fig3 = lamina_obra()
     with PdfPages(OUT + "escantillon_ducto_calefon.pdf") as pdf:
-        pdf.savefig(fig); pdf.savefig(fig2); plt.close("all")
+        pdf.savefig(lamina_explicativa()); pdf.savefig(lamina_base()); pdf.savefig(fig3)
+        pagina_obra_1a1(pdf)
+        plt.close("all")
         for D in DIAMETROS:
             pagina_escantillon(pdf, D)
+    print("largo base", round(LARGO_OBRA + SUBIDA), "centro", round((SEP_MURO + D_OBRA / 2) / math.cos(ALFA)))
